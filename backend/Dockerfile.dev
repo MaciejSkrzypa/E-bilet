@@ -1,0 +1,12 @@
+FROM maven:3.9.11-eclipse-temurin-17
+
+WORKDIR /app
+
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw -q -DskipTests dependency:go-offline
+
+COPY docker/dev-entrypoint.sh /usr/local/bin/dev-entrypoint.sh
+RUN chmod +x /usr/local/bin/dev-entrypoint.sh
+
+EXPOSE 8080

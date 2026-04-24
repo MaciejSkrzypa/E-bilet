@@ -1,0 +1,43 @@
+<main class="shell">
+  <section class="panel">
+    <p class="eyebrow">Frontend -> Backend</p>
+    <h1>{{ title }}</h1>
+    <p class="lead">
+      Click the button to call <code>/health</code> and display the latest backend response.
+    </p>
+
+    <button
+      class="health-button"
+      type="button"
+      (click)="fetchHealth()"
+      [disabled]="isLoading()"
+    >
+      {{ isLoading() ? 'Checking...' : 'Check backend health' }}
+    </button>
+
+    @if (errorMessage(); as errorMessage) {
+      <p class="message error">{{ errorMessage }}</p>
+    }
+
+    @if (health(); as health) {
+      <section class="result">
+        <p class="message success">Backend responded successfully.</p>
+
+        <dl class="response-grid">
+          <div>
+            <dt>status</dt>
+            <dd>{{ health.status }}</dd>
+          </div>
+          <div>
+            <dt>number</dt>
+            <dd>{{ health.number }}</dd>
+          </div>
+        </dl>
+
+        <pre class="json">{{ health | json }}</pre>
+      </section>
+    } @else {
+      <p class="message idle">No response yet.</p>
+    }
+  </section>
+</main>
