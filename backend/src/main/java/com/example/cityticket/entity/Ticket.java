@@ -1,6 +1,7 @@
 package com.example.cityticket.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -65,10 +66,10 @@ public class Ticket {
 	private Integer durationMinutes;
 
 	@Column(name = "valid_from")
-	private LocalDateTime validFrom;
+	private LocalDate validFrom;
 
 	@Column(name = "valid_to")
-	private LocalDateTime validTo;
+	private LocalDate validTo;
 
 	@Column(name = "validated_at")
 	private LocalDateTime validatedAt;

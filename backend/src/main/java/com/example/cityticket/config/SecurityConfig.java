@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final RestAuthenticationEntryPoint authenticationEntryPoint;
+	private final RestAccessDeniedHandler accessDeniedHandler;
 
 	private static final String[] PUBLIC_PATHS = {
 			"/health",
@@ -36,6 +38,9 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(cors -> {})
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.exceptionHandling(eh -> eh
+						.authenticationEntryPoint(authenticationEntryPoint)
+						.accessDeniedHandler(accessDeniedHandler))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(PUBLIC_PATHS).permitAll()
 						.requestMatchers("/api/inspection/**").hasRole("INSPECTOR")

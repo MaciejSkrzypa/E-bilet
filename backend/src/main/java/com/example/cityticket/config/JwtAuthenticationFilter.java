@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.cityticket.service.CustomUserDetailsService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -46,8 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						userDetails, null, userDetails.getAuthorities());
 				auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(auth);
+			} catch (ExpiredJwtException ex) {
+				SecurityContextHolder.clearContext();
+				request.setAttribute(RestAuthenticationEntryPoint.AUTH_ERROR_ATTRIBUTE,
+						"JWT expired at " + ex.getClaims().getExpiration());
 			} catch (JwtException ex) {
 				SecurityContextHolder.clearContext();
+				request.setAttribute(RestAuthenticationEntryPoint.AUTH_ERROR_ATTRIBUTE,
+						"Invalid JWT: " + ex.getMessage());
 			}
 		}
 

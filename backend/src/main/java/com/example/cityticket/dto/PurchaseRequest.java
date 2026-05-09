@@ -1,11 +1,11 @@
 package com.example.cityticket.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotNull;
 
 public record PurchaseRequest(
 		@NotNull Long offerId,
-		LocalDateTime validFrom,
-		LocalDateTime validTo) {
+		LocalDate validFrom,
+		LocalDate validTo) {
 }

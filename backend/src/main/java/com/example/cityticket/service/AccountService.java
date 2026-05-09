@@ -1,8 +1,9 @@
 package com.example.cityticket.service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,28 +27,26 @@ public class AccountService {
 	private final TransactionRepository transactionRepository;
 
 	@Transactional(readOnly = true)
-	public UserResponse me(String username) {
-		return UserResponse.from(loadUser(username));
+	public UserResponse me(String email) {
+		return UserResponse.from(loadUser(email));
 	}
 
 	@Transactional
-	public UserResponse topUp(String username, BigDecimal amount) {
-		User user = loadUser(username);
+	public UserResponse topUp(String email, BigDecimal amount) {
+		User user = loadUser(email);
 		user.setBalance(user.getBalance().add(amount));
 		transactionRepository.save(new Transaction(user, TransactionType.TOPUP, amount, null));
 		return UserResponse.from(user);
 	}
 
 	@Transactional(readOnly = true)
-	public List<TransactionResponse> history(String username) {
-		User user = loadUser(username);
-		return transactionRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId()).stream()
-				.map(TransactionResponse::from)
-				.toList();
+	public Page<TransactionResponse> history(String email, Pageable pageable) {
+		User user = loadUser(email);
+		return transactionRepository.findAllByUserId(user.getId(), pageable).map(TransactionResponse::from);
 	}
 
-	private User loadUser(String username) {
-		return userRepository.findByUsername(username)
+	private User loadUser(String email) {
+		return userRepository.findByEmail(email)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 	}
 }

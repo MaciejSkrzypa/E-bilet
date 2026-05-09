@@ -11,8 +11,7 @@ public record TicketOfferResponse(
 		TicketType type,
 		Fare fare,
 		BigDecimal price,
-		Integer durationMinutes,
-		Integer priceUnitMinutes) {
+		Integer durationMinutes) {
 
 	public static TicketOfferResponse from(TicketOffer offer) {
 		return new TicketOfferResponse(
@@ -20,7 +19,6 @@ public record TicketOfferResponse(
 				offer.getType(),
 				offer.getFare(),
 				offer.getPrice(),
-				offer.getDurationMinutes(),
-				offer.getPriceUnitMinutes());
+				offer.getDurationMinutes());
 	}
 }
