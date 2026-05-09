@@ -1,6 +1,7 @@
 package com.example.cityticket.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,8 +18,8 @@ public record TicketResponse(
 		BigDecimal price,
 		LocalDateTime purchaseDate,
 		Integer durationMinutes,
-		LocalDateTime validFrom,
-		LocalDateTime validTo,
+		LocalDate validFrom,
+		LocalDate validTo,
 		LocalDateTime validatedAt,
 		Long validatedVehicleId,
 		String validatedVehicleLabel) {

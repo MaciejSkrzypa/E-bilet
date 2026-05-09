@@ -40,18 +40,13 @@ public class TicketOffer {
 	@Column(name = "duration_minutes")
 	private Integer durationMinutes;
 
-	@Column(name = "price_unit_minutes")
-	private Integer priceUnitMinutes;
-
 	@Column(nullable = false)
 	private boolean active = true;
 
-	public TicketOffer(TicketType type, Fare fare, BigDecimal price,
-			Integer durationMinutes, Integer priceUnitMinutes) {
+	public TicketOffer(TicketType type, Fare fare, BigDecimal price, Integer durationMinutes) {
 		this.type = type;
 		this.fare = fare;
 		this.price = price;
 		this.durationMinutes = durationMinutes;
-		this.priceUnitMinutes = priceUnitMinutes;
 	}
 }

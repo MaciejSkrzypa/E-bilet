@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.cityticket.config.JwtTokenService;
 import com.example.cityticket.dto.LoginRequest;
 import com.example.cityticket.dto.LoginResponse;
 import com.example.cityticket.dto.RegisterRequest;
 import com.example.cityticket.dto.UserResponse;
-import com.example.cityticket.config.JwtTokenService;
 import com.example.cityticket.entity.User;
 import com.example.cityticket.repository.UserRepository;
 import com.example.cityticket.service.AuthService;
@@ -38,7 +38,7 @@ public class AuthController {
 
 	@PostMapping("/register")
 	public ResponseEntity<UserResponse> register(@RequestBody @Valid RegisterRequest request) {
-		User user = authService.registerPassenger(request.username(), request.password());
+		User user = authService.registerPassenger(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(user));
 	}
 
@@ -47,15 +47,15 @@ public class AuthController {
 		Authentication authentication;
 		try {
 			authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+					new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 		} catch (AuthenticationException ex) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
 		}
 
-		User user = userRepository.findByUsername(authentication.getName())
+		User user = userRepository.findByEmail(authentication.getName())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
-		String token = jwtTokenService.generate(user.getUsername(), user.getRole());
+		String token = jwtTokenService.generate(user.getEmail(), user.getRole());
 		return new LoginResponse(token, jwtTokenService.expirationOf(token), UserResponse.from(user));
 	}
 }

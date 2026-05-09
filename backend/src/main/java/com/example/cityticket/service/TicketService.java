@@ -1,12 +1,15 @@
 package com.example.cityticket.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,8 +44,8 @@ public class TicketService {
 	private final VehicleRepository vehicleRepository;
 
 	@Transactional
-	public TicketResponse purchase(String username, PurchaseRequest request) {
-		User user = userRepository.findByUsername(username)
+	public TicketResponse purchase(String email, PurchaseRequest request) {
+		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
 		TicketOffer offer = ticketOfferRepository.findById(request.offerId())
@@ -74,12 +77,35 @@ public class TicketService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<TicketResponse> findMyTickets(String username) {
-		User user = userRepository.findByUsername(username)
+	public Page<TicketResponse> findMyTickets(String email, List<TicketType> types, Boolean validated,
+			Pageable pageable) {
+		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-		return ticketRepository.findAllByOwnerIdOrderByPurchaseDateDesc(user.getId()).stream()
-				.map(TicketResponse::from)
-				.toList();
+
+		Specification<Ticket> spec = ownedBy(user.getId());
+		if (types != null && !types.isEmpty()) {
+			spec = spec.and(typeIn(types));
+		}
+		if (validated != null) {
+			spec = spec.and(validated ? hasBeenValidated() : notValidated());
+		}
+		return ticketRepository.findAll(spec, pageable).map(TicketResponse::from);
+	}
+
+	private static Specification<Ticket> ownedBy(Long ownerId) {
+		return (root, query, cb) -> cb.equal(root.get("owner").get("id"), ownerId);
+	}
+
+	private static Specification<Ticket> typeIn(List<TicketType> types) {
+		return (root, query, cb) -> root.get("type").in(types);
+	}
+
+	private static Specification<Ticket> hasBeenValidated() {
+		return (root, query, cb) -> cb.isNotNull(root.get("validatedAt"));
+	}
+
+	private static Specification<Ticket> notValidated() {
+		return (root, query, cb) -> cb.isNull(root.get("validatedAt"));
 	}
 
 	@Transactional
@@ -116,17 +142,18 @@ public class TicketService {
 		}
 
 		LocalDateTime now = LocalDateTime.now();
+		LocalDate today = now.toLocalDate();
 		String reason;
 		boolean valid;
 
 		switch (ticket.getType()) {
 			case PERIOD -> {
-				if (!now.isBefore(ticket.getValidFrom()) && !now.isAfter(ticket.getValidTo())) {
+				if (!today.isBefore(ticket.getValidFrom()) && !today.isAfter(ticket.getValidTo())) {
 					valid = true;
 					reason = "Period ticket within validity range";
 				} else {
 					valid = false;
-					reason = "Inspection time outside [validFrom, validTo]";
+					reason = "Inspection date outside [validFrom, validTo]";
 				}
 			}
 			case SINGLE -> {
@@ -179,11 +206,11 @@ public class TicketService {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"validFrom and validTo are required for PERIOD tickets");
 				}
-				if (!request.validFrom().isBefore(request.validTo())) {
+				if (request.validFrom().isAfter(request.validTo())) {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-							"validFrom must be strictly before validTo");
+							"validFrom must be on or before validTo");
 				}
-				if (request.validFrom().isBefore(LocalDateTime.now())) {
+				if (request.validFrom().isBefore(LocalDate.now())) {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"validFrom cannot be in the past");
 				}
@@ -195,10 +222,7 @@ public class TicketService {
 		if (offer.getType() != TicketType.PERIOD) {
 			return offer.getPrice();
 		}
-		long minutes = ChronoUnit.MINUTES.between(request.validFrom(), request.validTo());
-		BigDecimal minutesBd = BigDecimal.valueOf(minutes);
-		BigDecimal unitBd = BigDecimal.valueOf(offer.getPriceUnitMinutes());
-		BigDecimal units = minutesBd.divide(unitBd, 4, RoundingMode.HALF_UP);
-		return offer.getPrice().multiply(units).setScale(2, RoundingMode.HALF_UP);
+		long days = ChronoUnit.DAYS.between(request.validFrom(), request.validTo()) + 1;
+		return offer.getPrice().multiply(BigDecimal.valueOf(days));
 	}
 }

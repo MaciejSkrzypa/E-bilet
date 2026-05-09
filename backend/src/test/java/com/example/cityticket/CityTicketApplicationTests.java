@@ -1,13 +1,10 @@
 package com.example.cityticket;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class CityTicketApplicationTests {
+class CityTicketApplicationTests extends AbstractIntegrationTest {
 
 	@Test
 	void contextLoads() {
 	}
-
 }

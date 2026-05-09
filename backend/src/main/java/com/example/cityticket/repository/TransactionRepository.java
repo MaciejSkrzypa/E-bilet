@@ -1,12 +1,12 @@
 package com.example.cityticket.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.cityticket.entity.Transaction;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-	List<Transaction> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+	Page<Transaction> findAllByUserId(Long userId, Pageable pageable);
 }

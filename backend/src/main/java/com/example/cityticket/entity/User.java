@@ -1,6 +1,7 @@
 package com.example.cityticket.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,11 +30,20 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true, length = 64)
-	private String username;
+	@Column(nullable = false, unique = true, length = 254)
+	private String email;
 
 	@Column(name = "password_hash", nullable = false)
 	private String passwordHash;
+
+	@Column(name = "first_name", nullable = false, length = 64)
+	private String firstName;
+
+	@Column(name = "last_name", nullable = false, length = 64)
+	private String lastName;
+
+	@Column(name = "date_of_birth", nullable = false)
+	private LocalDate dateOfBirth;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 16)
@@ -46,9 +56,13 @@ public class User {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
-	public User(String username, String passwordHash, Role role) {
-		this.username = username;
+	public User(String email, String passwordHash, String firstName, String lastName,
+			LocalDate dateOfBirth, Role role) {
+		this.email = email;
 		this.passwordHash = passwordHash;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.dateOfBirth = dateOfBirth;
 		this.role = role;
 	}
 }

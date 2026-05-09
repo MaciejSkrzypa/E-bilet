@@ -1,6 +1,7 @@
 package com.example.cityticket.config;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -33,11 +34,20 @@ public class DataSeeder implements CommandLineRunner {
 	private final TicketOfferRepository ticketOfferRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	@Value("${app.seed.inspector.username}")
-	private String inspectorUsername;
+	@Value("${app.seed.inspector.email}")
+	private String inspectorEmail;
 
 	@Value("${app.seed.inspector.password}")
 	private String inspectorPassword;
+
+	@Value("${app.seed.inspector.first-name}")
+	private String inspectorFirstName;
+
+	@Value("${app.seed.inspector.last-name}")
+	private String inspectorLastName;
+
+	@Value("${app.seed.inspector.date-of-birth}")
+	private String inspectorDateOfBirth;
 
 	@Override
 	public void run(String... args) {
@@ -47,16 +57,19 @@ public class DataSeeder implements CommandLineRunner {
 	}
 
 	private void seedInspector() {
-		if (userRepository.existsByUsername(inspectorUsername)) {
-			log.info("Inspector '{}' already exists — skipping seed.", inspectorUsername);
+		if (userRepository.existsByEmail(inspectorEmail)) {
+			log.info("Inspector '{}' already exists — skipping seed.", inspectorEmail);
 			return;
 		}
 		User inspector = new User(
-				inspectorUsername,
+				inspectorEmail,
 				passwordEncoder.encode(inspectorPassword),
+				inspectorFirstName,
+				inspectorLastName,
+				LocalDate.parse(inspectorDateOfBirth),
 				Role.INSPECTOR);
 		userRepository.save(inspector);
-		log.info("Seeded inspector account '{}'.", inspectorUsername);
+		log.info("Seeded inspector account '{}'.", inspectorEmail);
 	}
 
 	private void seedVehicles() {
@@ -81,14 +94,14 @@ public class DataSeeder implements CommandLineRunner {
 			return;
 		}
 		List<TicketOffer> offers = List.of(
-				new TicketOffer(TicketType.SINGLE, Fare.NORMAL, new BigDecimal("4.40"), null, null),
-				new TicketOffer(TicketType.SINGLE, Fare.REDUCED, new BigDecimal("2.20"), null, null),
-				new TicketOffer(TicketType.TIME, Fare.NORMAL, new BigDecimal("3.40"), 30, null),
-				new TicketOffer(TicketType.TIME, Fare.REDUCED, new BigDecimal("1.70"), 30, null),
-				new TicketOffer(TicketType.TIME, Fare.NORMAL, new BigDecimal("5.00"), 60, null),
-				new TicketOffer(TicketType.TIME, Fare.REDUCED, new BigDecimal("2.50"), 60, null),
-				new TicketOffer(TicketType.PERIOD, Fare.NORMAL, new BigDecimal("1.00"), null, 10),
-				new TicketOffer(TicketType.PERIOD, Fare.REDUCED, new BigDecimal("0.50"), null, 10));
+				new TicketOffer(TicketType.SINGLE, Fare.NORMAL, new BigDecimal("4.40"), null),
+				new TicketOffer(TicketType.SINGLE, Fare.REDUCED, new BigDecimal("2.20"), null),
+				new TicketOffer(TicketType.TIME, Fare.NORMAL, new BigDecimal("3.40"), 30),
+				new TicketOffer(TicketType.TIME, Fare.REDUCED, new BigDecimal("1.70"), 30),
+				new TicketOffer(TicketType.TIME, Fare.NORMAL, new BigDecimal("5.00"), 60),
+				new TicketOffer(TicketType.TIME, Fare.REDUCED, new BigDecimal("2.50"), 60),
+				new TicketOffer(TicketType.PERIOD, Fare.NORMAL, new BigDecimal("5.00"), null),
+				new TicketOffer(TicketType.PERIOD, Fare.REDUCED, new BigDecimal("2.50"), null));
 		ticketOfferRepository.saveAll(offers);
 		log.info("Seeded {} ticket offers.", offers.size());
 	}
