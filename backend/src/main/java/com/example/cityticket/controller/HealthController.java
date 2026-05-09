@@ -1,7 +1,8 @@
-package com.example.cityticket.health;
+package com.example.cityticket.controller;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.example.cityticket.dto.HealthResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

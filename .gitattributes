@@ -1,0 +1,19 @@
+# Auto-detect text files and normalize their line endings to LF on commit.
+* text=auto eol=lf
+
+# Force LF for shell scripts (run inside Linux containers).
+*.sh text eol=lf
+
+# Force LF for Dockerfiles and docker-compose files.
+Dockerfile* text eol=lf
+docker-compose*.yml text eol=lf
+
+# Mark binary files explicitly so Git doesn't try to convert them.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.jar binary
