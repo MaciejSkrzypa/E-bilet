@@ -1,0 +1,29 @@
+<div class="modal-backdrop" (click)="close()">
+  <section class="panel modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close-x" type="button" (click)="close()" aria-label="Zamknij modal">×</button>
+
+    <div class="modal-card__head">
+      <div>
+        <p class="eyebrow">Kasowanie biletu</p>
+        <h3>{{ title() }}</h3>
+      </div>
+    </div>
+
+    <form class="form-grid" [formGroup]="form()" (ngSubmit)="submit()">
+      <app-vehicle-autocomplete-field
+        [queryControl]="form().controls.vehicleQuery"
+        [vehicleIdControl]="form().controls.vehicleId"
+      />
+
+      @if (error(); as errorMessage) {
+        <p class="message-banner error">{{ errorMessage }}</p>
+      }
+
+      <div class="modal-actions">
+        <button class="primary-action modal-submit-button" type="submit" [disabled]="form().invalid || isSubmitting()">
+          {{ isSubmitting() ? 'Kasowanie...' : 'Skasuj bilet' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

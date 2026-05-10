@@ -1,12 +1,15 @@
 package com.example.cityticket.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.query.common.TemporalUnit;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.cityticket.dto.InspectionResponse;
 import com.example.cityticket.dto.PurchaseRequest;
+import com.example.cityticket.dto.TicketFilterStatus;
 import com.example.cityticket.dto.TicketResponse;
 import com.example.cityticket.entity.Ticket;
 import com.example.cityticket.entity.TicketOffer;
@@ -30,7 +34,10 @@ import com.example.cityticket.repository.TicketRepository;
 import com.example.cityticket.repository.TransactionRepository;
 import com.example.cityticket.repository.UserRepository;
 import com.example.cityticket.repository.VehicleRepository;
+import com.example.cityticket.util.AppTime;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -77,17 +84,26 @@ public class TicketService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<TicketResponse> findMyTickets(String email, List<TicketType> types, Boolean validated,
-			Pageable pageable) {
+	public Page<TicketResponse> findMyTickets(String email, List<TicketType> types, List<TicketFilterStatus> statuses,
+			Boolean validated, Boolean active, Pageable pageable) {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
 		Specification<Ticket> spec = ownedBy(user.getId());
+		LocalDate today = AppTime.today();
+		LocalDateTime now = AppTime.nowDateTime();
+
 		if (types != null && !types.isEmpty()) {
 			spec = spec.and(typeIn(types));
 		}
+		if (statuses != null && !statuses.isEmpty()) {
+			spec = spec.and(matchesStatuses(statuses, today, now));
+		}
 		if (validated != null) {
 			spec = spec.and(validated ? hasBeenValidated() : notValidated());
+		}
+		if (active != null) {
+			spec = spec.and(active ? isCurrentlyActive(today, now) : isCurrentlyInactive(today, now));
 		}
 		return ticketRepository.findAll(spec, pageable).map(TicketResponse::from);
 	}
@@ -108,6 +124,56 @@ public class TicketService {
 		return (root, query, cb) -> cb.isNull(root.get("validatedAt"));
 	}
 
+	private static Specification<Ticket> requiresValidation() {
+		return (root, query, cb) -> cb.and(
+				root.get("type").in(List.of(TicketType.SINGLE, TicketType.TIME)),
+				cb.isNull(root.get("validatedAt")));
+	}
+
+	private static Specification<Ticket> matchesStatuses(List<TicketFilterStatus> statuses, LocalDate today, LocalDateTime now) {
+		return (root, query, cb) -> {
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (statuses.contains(TicketFilterStatus.ACTIVE)) {
+				predicates.add(isCurrentlyActive(today, now).toPredicate(root, query, cb));
+			}
+			if (statuses.contains(TicketFilterStatus.REQUIRES_VALIDATION)) {
+				predicates.add(requiresValidation().toPredicate(root, query, cb));
+			}
+			if (statuses.contains(TicketFilterStatus.VALIDATED)) {
+				predicates.add(hasBeenValidated().toPredicate(root, query, cb));
+			}
+
+			return cb.or(predicates.toArray(Predicate[]::new));
+		};
+	}
+
+	private static Specification<Ticket> isCurrentlyActive(LocalDate today, LocalDateTime now) {
+		return (root, query, cb) -> {
+			HibernateCriteriaBuilder hcb = (HibernateCriteriaBuilder) cb;
+			Expression<java.time.Duration> oneMinute = hcb.duration(1, TemporalUnit.MINUTE);
+			Expression<java.time.Duration> ticketDuration = hcb.durationScaled(root.get("durationMinutes"), oneMinute);
+			Expression<LocalDateTime> expiresAt = hcb.addDuration(root.get("validatedAt"), ticketDuration);
+
+			var activePeriodTicket = cb.and(
+					cb.equal(root.get("type"), TicketType.PERIOD),
+					cb.lessThanOrEqualTo(root.get("validFrom"), today),
+					cb.greaterThanOrEqualTo(root.get("validTo"), today));
+
+			var activeTimeTicket = cb.and(
+					cb.equal(root.get("type"), TicketType.TIME),
+					cb.isNotNull(root.get("validatedAt")),
+					cb.isNotNull(root.get("durationMinutes")),
+					cb.greaterThanOrEqualTo(expiresAt, now));
+
+			return cb.or(activePeriodTicket, activeTimeTicket);
+		};
+	}
+
+	private static Specification<Ticket> isCurrentlyInactive(LocalDate today, LocalDateTime now) {
+		return (root, query, cb) -> cb.not(isCurrentlyActive(today, now).toPredicate(root, query, cb));
+	}
+
 	@Transactional
 	public TicketResponse validate(UUID code, Long vehicleId) {
 		Ticket ticket = ticketRepository.findByCode(code)
@@ -125,7 +191,7 @@ public class TicketService {
 		Vehicle vehicle = vehicleRepository.findById(vehicleId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
 
-		ticket.setValidatedAt(LocalDateTime.now());
+		ticket.setValidatedAt(AppTime.nowDateTime());
 		ticket.setValidatedVehicle(vehicle);
 		return TicketResponse.from(ticket);
 	}
@@ -141,8 +207,8 @@ public class TicketService {
 			return new InspectionResponse(false, "Ticket not found", null);
 		}
 
-		LocalDateTime now = LocalDateTime.now();
-		LocalDate today = now.toLocalDate();
+		LocalDateTime now = AppTime.nowDateTime();
+		LocalDate today = AppTime.today();
 		String reason;
 		boolean valid;
 
@@ -160,6 +226,9 @@ public class TicketService {
 				if (ticket.getValidatedAt() == null) {
 					valid = false;
 					reason = "Ticket has not been validated (kasowanie missing)";
+				} else if (!ticket.getValidatedAt().toLocalDate().equals(today)) {
+					valid = false;
+					reason = "Single ticket expired: validation day has passed";
 				} else if (!ticket.getValidatedVehicle().getId().equals(inspectionVehicle.getId())) {
 					valid = false;
 					reason = "Single ticket validated in a different vehicle ("
@@ -210,7 +279,7 @@ public class TicketService {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"validFrom must be on or before validTo");
 				}
-				if (request.validFrom().isBefore(LocalDate.now())) {
+				if (request.validFrom().isBefore(AppTime.today())) {
 					throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 							"validFrom cannot be in the past");
 				}

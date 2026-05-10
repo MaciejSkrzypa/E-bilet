@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.auth-card {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+}
+
+.cta-row {
+  justify-content: center;
+}

@@ -1,0 +1,39 @@
+<div class="vehicle-picker" [attr.data-centered]="centered()">
+  <label class="field">
+    <span>{{ label() }}</span>
+
+    <div class="vehicle-picker__control">
+      <input
+        type="text"
+        [formControl]="queryControl()"
+        [attr.placeholder]="placeholder()"
+        autocomplete="off"
+        (focus)="openDropdown()"
+      />
+
+      @if (shouldShowDropdown()) {
+        <div class="vehicle-picker__dropdown" role="listbox" aria-label="Dopasowane pojazdy">
+          @if (isLoading()) {
+            <p class="vehicle-picker__status">Wyszukiwanie pojazdow...</p>
+          } @else if (errorMessage(); as errorMessage) {
+            <p class="vehicle-picker__status">{{ errorMessage }}</p>
+          } @else if (shouldShowNoResults()) {
+            <p class="vehicle-picker__status">Brak pojazdow pasujacych do wpisanego identyfikatora.</p>
+          } @else if (shouldShowSuggestions()) {
+            <div class="vehicle-picker__suggestions">
+              @for (vehicle of suggestions(); track vehicle.id) {
+                <button class="vehicle-picker__suggestion" type="button" (click)="selectVehicle(vehicle)">
+                  <strong>{{ vehicle.label }}</strong>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (shouldShowValidationError()) {
+      <small>Wybierz pojazd z listy podpowiedzi.</small>
+    }
+  </label>
+</div>

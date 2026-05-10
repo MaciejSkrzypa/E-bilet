@@ -1,0 +1,55 @@
+<div class="pagination-bar" [attr.data-density]="density()">
+  <label class="pagination-size">
+    <span>Na stronie</span>
+    <select [value]="size()" [disabled]="isLoading()" (change)="updateSize(($any($event.target).value))">
+      @for (sizeOption of sizeOptions(); track sizeOption) {
+        <option [value]="sizeOption" [selected]="size() === sizeOption">{{ sizeOption }}</option>
+      }
+    </select>
+  </label>
+
+  <nav class="pagination-actions" aria-label="Paginacja">
+    <button
+      class="secondary-action pagination-button"
+      data-role="prev"
+      type="button"
+      [disabled]="first() || isLoading()"
+      (click)="previousPage()"
+    >
+      Poprzednia
+    </button>
+
+    <div class="pagination-pages" role="list" aria-label="Numery stron">
+      @for (pageNumber of visiblePages(); track pageNumber) {
+        <button
+          class="secondary-action pagination-page"
+          [class.pagination-page--active]="pageNumber === page()"
+          [attr.aria-current]="pageNumber === page() ? 'page' : null"
+          type="button"
+          [disabled]="isLoading()"
+          (click)="goToPage(pageNumber)"
+        >
+          {{ pageNumber + 1 }}
+        </button>
+      }
+    </div>
+
+    <button
+      class="secondary-action pagination-button"
+      data-role="next"
+      type="button"
+      [disabled]="last() || isLoading()"
+      (click)="nextPage()"
+    >
+      Nastepna
+    </button>
+  </nav>
+
+  <p class="pagination-summary">
+    @if (totalElements() === 0) {
+      0 {{ itemLabel() }}
+    } @else {
+      {{ rangeStart() }}-{{ rangeEnd() }} z {{ totalElements() }} {{ itemLabel() }}
+    }
+  </p>
+</div>

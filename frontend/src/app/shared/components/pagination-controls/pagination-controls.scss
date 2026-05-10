@@ -1,0 +1,138 @@
+:host {
+  display: block;
+}
+
+.pagination-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-soft);
+}
+
+.pagination-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--text-muted);
+  justify-self: start;
+}
+
+.pagination-size span,
+.pagination-summary {
+  white-space: nowrap;
+}
+
+.pagination-size select {
+  min-width: 5.5rem;
+}
+
+.pagination-summary {
+  color: var(--text-muted);
+  justify-self: end;
+  text-align: right;
+}
+
+.pagination-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  justify-self: center;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+}
+
+.pagination-button {
+  min-width: 7.5rem;
+  min-height: 2.7rem;
+  padding: 0.65rem 0.95rem;
+}
+
+.pagination-page {
+  min-width: 2.7rem;
+  min-height: 2.7rem;
+  padding: 0.65rem;
+  border-radius: 0.95rem;
+}
+
+.pagination-page--active {
+  border-color: transparent;
+  color: #111820;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));
+  box-shadow: 0 12px 28px rgba(255, 124, 72, 0.22);
+}
+
+.pagination-bar[data-density='compact'] {
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.8rem;
+}
+
+.pagination-bar[data-density='compact'] .pagination-size,
+.pagination-bar[data-density='compact'] .pagination-actions {
+  gap: 0.55rem;
+}
+
+.pagination-bar[data-density='compact'] .pagination-pages {
+  gap: 0.35rem;
+  min-height: 2.25rem;
+}
+
+.pagination-bar[data-density='compact'] .pagination-button {
+  min-width: 6.25rem;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.88rem;
+}
+
+.pagination-bar[data-density='compact'] .pagination-page {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0.45rem;
+  border-radius: 0.8rem;
+  font-size: 0.88rem;
+}
+
+.pagination-bar[data-density='compact'] .pagination-summary,
+.pagination-bar[data-density='compact'] .pagination-size {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .pagination-bar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .pagination-size {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pagination-actions {
+    gap: 0.65rem;
+  }
+
+  .pagination-button {
+    min-width: 0;
+    flex: 1 1 9rem;
+  }
+
+  .pagination-summary {
+    justify-self: center;
+    text-align: center;
+  }
+}

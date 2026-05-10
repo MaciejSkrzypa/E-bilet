@@ -1,0 +1,79 @@
+<div class="modal-backdrop" (click)="close()">
+  <section class="panel modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close-x" type="button" (click)="close()" aria-label="Zamknij modal">×</button>
+
+    <div class="modal-card__head">
+      <div>
+        <p class="eyebrow">Potwierdzenie zakupu</p>
+        <h3>{{ offerTitle() }}</h3>
+      </div>
+    </div>
+
+    <form class="form-grid" [formGroup]="form()" (ngSubmit)="submit()">
+      @if (offer().type === 'PERIOD') {
+        <label class="field">
+          <span>Data poczatkowa</span>
+          <input type="date" [min]="minimumPeriodStart()" formControlName="validFrom" />
+          @if (form().controls.validFrom.invalid && form().controls.validFrom.touched) {
+            <small>Wybierz date poczatkowa.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Data koncowa</span>
+          <input type="date" [min]="minimumPeriodStart()" formControlName="validTo" />
+          @if (form().controls.validTo.invalid && form().controls.validTo.touched) {
+            <small>Wybierz date koncowa.</small>
+          }
+        </label>
+
+        @if (form().errors?.['invalidRange']) {
+          <small class="inline-error">Data koncowa nie moze byc wczesniejsza od poczatkowej.</small>
+        }
+
+        @if (form().errors?.['startInPast']) {
+          <small class="inline-error">Poczatek okresu nie moze byc w przeszlosci.</small>
+        }
+      }
+
+      <div class="purchase-summary">
+        <div class="purchase-summary__row">
+          <span>Stan konta</span>
+          <strong>{{ currentBalance() | number: '1.2-2' }} PLN</strong>
+        </div>
+
+        <div class="purchase-summary__row">
+          <span>Cena biletu</span>
+          <strong>
+            @if (previewPrice() !== null) {
+              {{ previewPrice() | number: '1.2-2' }} PLN
+            } @else {
+              -
+            }
+          </strong>
+        </div>
+
+        <div class="purchase-summary__row">
+          <span>Stan po zakupie</span>
+          <strong [attr.data-negative]="(balanceAfterPurchase() ?? 0) < 0">
+            @if (balanceAfterPurchase() !== null) {
+              {{ balanceAfterPurchase() | number: '1.2-2' }} PLN
+            } @else {
+              -
+            }
+          </strong>
+        </div>
+      </div>
+
+      @if (error(); as errorMessage) {
+        <p class="message-banner error">{{ errorMessage }}</p>
+      }
+
+      <div class="modal-actions">
+        <button class="primary-action modal-submit-button" type="submit" [disabled]="isSubmitting() || !canConfirm()">
+          {{ isSubmitting() ? 'Zakup w toku...' : 'Potwierdz zakup' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

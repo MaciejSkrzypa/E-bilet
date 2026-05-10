@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.cityticket.dto.PageResponse;
 import com.example.cityticket.dto.PurchaseRequest;
+import com.example.cityticket.dto.TicketFilterStatus;
 import com.example.cityticket.dto.TicketResponse;
 import com.example.cityticket.entity.TicketType;
 import com.example.cityticket.service.TicketService;
@@ -43,8 +44,10 @@ public class TicketController {
 	public PageResponse<TicketResponse> myTickets(
 			Authentication auth,
 			@RequestParam(required = false) List<TicketType> type,
+			@RequestParam(required = false) List<TicketFilterStatus> status,
 			@RequestParam(required = false) Boolean validated,
+			@RequestParam(required = false) Boolean active,
 			@PageableDefault(size = 20, sort = "purchaseDate", direction = Sort.Direction.DESC) Pageable pageable) {
-		return PageResponse.from(ticketService.findMyTickets(auth.getName(), type, validated, pageable));
+		return PageResponse.from(ticketService.findMyTickets(auth.getName(), type, status, validated, active, pageable));
 	}
 }

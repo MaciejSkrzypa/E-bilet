@@ -1,0 +1,107 @@
+<section class="centered-page">
+  <article class="panel wide-panel">
+    @switch (currentSection()) {
+      @case ('profile') {
+        <p class="eyebrow">O mnie</p>
+        <h1>Dane konta</h1>
+
+        <div class="profile-fields">
+          @for (field of profileFields(); track field.label) {
+            <article class="profile-card">
+              <span>{{ field.label }}</span>
+              <strong>{{ field.value }}</strong>
+            </article>
+          }
+        </div>
+      }
+
+      @default {
+        <p class="eyebrow">Kontrola biletu</p>
+        <h1>Kontrola waznosci biletu</h1>
+        <p class="lead">Wprowadz kod biletu i numer pojazdu, aby natychmiast sprawdzic jego status.</p>
+
+        <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+          <label class="field">
+            <span>Kod biletu</span>
+            <input type="text" formControlName="code" placeholder="np. 123e4567-e89b-12d3-a456-426614174000" />
+            @if (form.controls.code.invalid && form.controls.code.touched) {
+              <small>Podaj poprawny kod biletu.</small>
+            }
+          </label>
+
+          <app-vehicle-autocomplete-field
+            label="Numer pojazdu"
+            [centered]="true"
+            [queryControl]="form.controls.vehicleQuery"
+            [vehicleIdControl]="form.controls.vehicleId"
+          />
+
+          @if (errorMessage(); as errorMessage) {
+            <p class="message-banner error">{{ errorMessage }}</p>
+          }
+
+          <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Sprawdzanie...' : 'Sprawdz waznosc biletu' }}
+          </button>
+        </form>
+
+        @if (result(); as result) {
+          <section class="result-card" [attr.data-valid]="result.valid">
+            <div class="result-card__head">
+              <span class="tag">{{ result.valid ? 'WAZNY' : 'NIEWAZNY' }}</span>
+              <strong>{{ inspectionReasonLabel(result.reason) }}</strong>
+            </div>
+
+            @if (result.ticket; as ticket) {
+              <div class="stack-list">
+                <article class="ticket-row">
+                  <div class="ticket-row__head">
+                    <div>
+                      <strong>{{ ticketTitle(ticket) }}</strong>
+                    </div>
+                    <span class="tag">{{ ticket.price | number: '1.2-2' }} PLN</span>
+                  </div>
+
+                  <dl class="detail-list">
+                    <div>
+                      <dt>Kod</dt>
+                      <dd>{{ ticket.code }}</dd>
+                    </div>
+                    <div>
+                      <dt>Zakup</dt>
+                      <dd>{{ ticket.purchaseDate | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                    </div>
+                    @if (ticket.validatedAt) {
+                      <div>
+                        <dt>Skasowany</dt>
+                        <dd>{{ ticket.validatedAt | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                      </div>
+                    }
+                    @if (ticket.validatedVehicleLabel) {
+                      <div>
+                        <dt>Pojazd</dt>
+                        <dd>{{ ticket.validatedVehicleLabel }}</dd>
+                      </div>
+                    }
+                    @if (ticket.validFrom) {
+                      <div>
+                        <dt>Wazny od</dt>
+                        <dd>{{ ticket.validFrom | date: 'dd.MM.yyyy' }}</dd>
+                      </div>
+                    }
+                    @if (ticket.validTo) {
+                      <div>
+                        <dt>Wazny do</dt>
+                        <dd>{{ ticket.validTo | date: 'dd.MM.yyyy' }}</dd>
+                      </div>
+                    }
+                  </dl>
+                </article>
+              </div>
+            }
+          </section>
+        }
+      }
+    }
+  </article>
+</section>

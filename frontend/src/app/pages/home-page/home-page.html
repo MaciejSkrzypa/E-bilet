@@ -1,0 +1,142 @@
+<section class="panel">
+  <div class="section-head section-head--with-filters">
+    <div>
+      <p class="eyebrow">Oferta</p>
+      <h2>Dostepne bilety</h2>
+    </div>
+
+    <div class="filter-row" aria-label="Filtrowanie rodzajow biletow">
+      @for (filter of ticketTypeFilters; track filter.type) {
+        <button
+          class="filter-chip"
+          type="button"
+          [attr.data-active]="isTicketTypeSelected(filter.type)"
+          (click)="toggleTicketTypeFilter(filter.type)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (errorMessage(); as errorMessage) {
+    <p class="message-banner error">{{ errorMessage }}</p>
+  }
+
+  @if (purchaseMessage(); as purchaseMessage) {
+    <p class="message-banner success">{{ purchaseMessage }}</p>
+  }
+
+  @if (purchaseError(); as purchaseError) {
+    <p class="message-banner error">{{ purchaseError }}</p>
+  }
+
+  @if (isLoading() && offers().length === 0 && offerTotalElements() === 0) {
+    <p class="message-banner">Ladowanie aktualnej oferty biletowej...</p>
+  } @else if (!isLoading() && offerTotalElements() === 0 && hasOfferFilters()) {
+    <p class="message-banner">Brak biletow spelniajacych wybrane filtry.</p>
+  } @else if (!isLoading() && offers().length === 0) {
+    <p class="message-banner">Obecnie brak dostepnych biletow.</p>
+  } @else {
+    <div class="paged-collection-shell">
+      <div class="offer-grid offer-grid--paged" [attr.data-loading]="isLoading()" [attr.aria-busy]="isLoading()">
+        @for (offer of offers(); track offer.id) {
+          <article class="offer-card">
+            <div class="offer-card__top">
+              <span class="tag">{{ ticketTypeLabel(offer.type) }}</span>
+              <div class="offer-price">
+                <strong>{{ offer.price | number: '1.2-2' }} PLN</strong>
+                @if (offerPriceCaption(offer); as priceCaption) {
+                  <small>{{ priceCaption }}</small>
+                }
+              </div>
+            </div>
+
+            <h3>{{ offerTitle(offer) }}</h3>
+
+            <button
+              class="primary-action wide-button"
+              type="button"
+              (click)="buyOffer(offer)"
+              [disabled]="purchasePendingOfferId() === offer.id"
+            >
+              {{ purchasePendingOfferId() === offer.id ? 'Zakup w toku...' : 'Kup teraz' }}
+            </button>
+          </article>
+        }
+
+        @for (placeholder of emptyOfferSlots(); track placeholder) {
+          <article class="offer-card offer-card--placeholder" aria-hidden="true"></article>
+        }
+      </div>
+
+      @if (isLoading() && offers().length > 0) {
+        <div class="collection-loading-overlay" aria-hidden="true">
+          <span class="collection-loading-spinner"></span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (offerTotalElements() > 0) {
+    <app-pagination-controls
+      [page]="offerPage()"
+      [size]="offerPageSize()"
+      [totalElements]="offerTotalElements()"
+      [totalPages]="offerTotalPages()"
+      [first]="offerFirstPage()"
+      [last]="offerLastPage()"
+      [isLoading]="isLoading()"
+      [sizeOptions]="offerPageSizeOptions"
+      itemLabel="ofert"
+      (pageChanged)="changeOfferPage($event)"
+      (sizeChanged)="changeOfferPageSize($event)"
+    />
+  }
+</section>
+
+<section class="section-spacing">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Zasady korzystania</p>
+      <h2>Jak dzialaja bilety</h2>
+    </div>
+  </div>
+
+  <div class="insight-grid rules-grid">
+    <article class="panel">
+      <span class="tag">Jednorazowy</span>
+      <h3>Bilet jednorazowy</h3>
+      <p class="lead compact">Obowiazuje tylko w pojezdzie, w ktorym zostal skasowany.</p>
+    </article>
+
+    <article class="panel">
+      <span class="tag">Czasowy</span>
+      <h3>Bilet czasowy</h3>
+      <p class="lead compact">Po skasowaniu jest wazny przez czas wskazany w danej ofercie.</p>
+    </article>
+
+    <article class="panel">
+      <span class="tag">Okresowy</span>
+      <h3>Bilet okresowy</h3>
+      <p class="lead compact">Przy zakupie wybierasz date poczatkowa i koncowa jego waznosci.</p>
+    </article>
+  </div>
+</section>
+
+@if (selectedPurchaseOffer(); as selectedPurchaseOffer) {
+  <app-purchase-confirm-modal
+    [offer]="selectedPurchaseOffer"
+    [offerTitle]="offerTitle(selectedPurchaseOffer)"
+    [form]="periodPurchaseForm"
+    [minimumPeriodStart]="minimumPeriodStart()"
+    [currentBalance]="currentBalance()"
+    [previewPrice]="purchasePreviewPrice()"
+    [balanceAfterPurchase]="balanceAfterPurchase()"
+    [error]="purchaseError()"
+    [isSubmitting]="purchasePendingOfferId() === selectedPurchaseOffer.id"
+    [canConfirm]="canConfirmPurchase()"
+    (closeRequested)="closePurchaseModal()"
+    (submitRequested)="confirmPurchase()"
+  />
+}
