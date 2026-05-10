@@ -5,8 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,9 +15,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.AssertTrue;
+
+import com.example.cityticket.util.AppTime;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,7 +60,6 @@ public class Ticket {
 	@Column(nullable = false, precision = 10, scale = 2)
 	private BigDecimal price;
 
-	@CreationTimestamp
 	@Column(name = "purchase_date", nullable = false, updatable = false)
 	private LocalDateTime purchaseDate;
 
@@ -86,6 +87,13 @@ public class Ticket {
 		this.price = offer.getPrice();
 		this.durationMinutes = offer.getDurationMinutes();
 		this.code = UUID.randomUUID();
+	}
+
+	@PrePersist
+	void setPurchaseDateIfMissing() {
+		if (purchaseDate == null) {
+			purchaseDate = AppTime.nowDateTime();
+		}
 	}
 
 	@AssertTrue(message = "Ticket time fields must match its type")

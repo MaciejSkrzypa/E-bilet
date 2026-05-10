@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.auth-card {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 1rem;
+}
+
+.note-box {
+  margin: 0.2rem 0;
+}
+
+.subtle-copy {
+  text-align: center;
+}

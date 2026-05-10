@@ -1,0 +1,307 @@
+<nav class="panel subnav-bar" aria-label="Nawigacja panelu pasazera">
+  @for (section of sectionTabs; track section.id) {
+    <a class="subnav-link" [routerLink]="[]" [fragment]="section.id" [attr.data-active]="isSectionActive(section.id)">
+      {{ section.label }}
+    </a>
+  }
+</nav>
+
+@if (loadError(); as loadError) {
+  <p class="message-banner error section-spacing">{{ loadError }}</p>
+}
+
+@if (isLoading()) {
+  <section class="panel section-spacing">
+    <p class="message-banner">Ladowanie danych konta, biletow i historii transakcji...</p>
+  </section>
+} @else {
+  @switch (currentSection()) {
+    @case ('finance') {
+      <section class="section-spacing">
+        <article class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Historia finansowa</p>
+              <h2>Transakcje konta</h2>
+            </div>
+          </div>
+
+          @if (transactionsError(); as transactionsError) {
+            <p class="message-banner error">{{ transactionsError }}</p>
+          }
+
+          @if (isTransactionsLoading() && transactions().length === 0 && transactionTotalElements() === 0) {
+            <p class="message-banner">Ladowanie transakcji...</p>
+          } @else if (!isTransactionsLoading() && transactionTotalElements() === 0) {
+            <p class="lead compact">Historia transakcji jest pusta.</p>
+          } @else {
+            <div class="paged-collection-shell">
+              <div class="stack-list stack-list--transactions" [attr.data-loading]="isTransactionsLoading()" [attr.aria-busy]="isTransactionsLoading()">
+                @for (transaction of transactions(); track transaction.id) {
+                  <article class="ticket-row">
+                    <div class="ticket-row__head">
+                      <div>
+                        <strong>{{ transaction.type === 'TOPUP' ? 'Doladowanie' : 'Zakup biletu' }}</strong>
+                        <small>{{ transaction.createdAt | date: 'dd.MM.yyyy, HH:mm' }}</small>
+                      </div>
+
+                      <span class="tag transaction-amount" [attr.data-type]="transaction.type">
+                        {{ transaction.amount | number: '1.2-2' }} PLN
+                      </span>
+                    </div>
+
+                    @if (transaction.ticketCode) {
+                      <p class="lead compact">Powiazany bilet: {{ transaction.ticketCode }}</p>
+                    }
+                  </article>
+                }
+
+                @for (placeholder of emptyTransactionSlots(); track placeholder) {
+                  <article class="ticket-row ticket-row--placeholder ticket-row--transaction-placeholder" aria-hidden="true"></article>
+                }
+              </div>
+
+              @if (isTransactionsLoading() && transactions().length > 0) {
+                <div class="collection-loading-overlay" aria-hidden="true">
+                  <span class="collection-loading-spinner"></span>
+                </div>
+              }
+            </div>
+
+            <app-pagination-controls
+              [page]="transactionPage()"
+              [size]="transactionPageSize()"
+              [totalElements]="transactionTotalElements()"
+              [totalPages]="transactionTotalPages()"
+              [first]="transactionFirstPage()"
+              [last]="transactionLastPage()"
+              [isLoading]="isTransactionsLoading()"
+              density="compact"
+              [sizeOptions]="transactionPageSizeOptions"
+              itemLabel="transakcji"
+              (pageChanged)="changeTransactionPage($event)"
+              (sizeChanged)="changeTransactionPageSize($event)"
+            />
+          }
+        </article>
+      </section>
+    }
+
+    @case ('tickets') {
+      <section class="section-spacing">
+        <article class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Moje bilety</p>
+            </div>
+          </div>
+
+          <div class="tickets-toolbar">
+            <div class="filter-row" aria-label="Filtrowanie typow biletow">
+              @for (filter of ticketTypeFilters; track filter.type) {
+                <button
+                  class="filter-chip"
+                  type="button"
+                  [attr.data-active]="isTicketTypeSelected(filter.type)"
+                  [disabled]="isTicketsLoading()"
+                  (click)="toggleTicketTypeFilter(filter.type)"
+                >
+                  {{ filter.label }}
+                </button>
+              }
+            </div>
+
+            <div class="filter-row" aria-label="Filtrowanie po statusie biletu">
+              @for (filter of ticketStateFilters; track filter.status) {
+                <button
+                  class="filter-chip"
+                  type="button"
+                  [attr.data-active]="isTicketStatusSelected(filter.status)"
+                  [disabled]="isTicketsLoading()"
+                  (click)="toggleTicketStatusFilter(filter.status)"
+                >
+                  {{ filter.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (validationSuccess(); as validationSuccess) {
+            <p class="message-banner success">{{ validationSuccess }}</p>
+          }
+
+          @if (ticketsError(); as ticketsError) {
+            <p class="message-banner error">{{ ticketsError }}</p>
+          }
+
+          @if (isTicketsLoading() && tickets().length === 0 && ticketTotalElements() === 0) {
+            <p class="message-banner">Ladowanie biletow...</p>
+          } @else if (!isTicketsLoading() && ticketTotalElements() === 0) {
+            <p class="lead compact">
+              {{ hasTicketFilters() ? 'Brak biletow spelniajacych wybrane filtry.' : 'Nie masz jeszcze zadnych biletow.' }}
+            </p>
+          } @else {
+            <div class="paged-collection-shell">
+              <div class="stack-list stack-list--tickets" [attr.data-loading]="isTicketsLoading()" [attr.aria-busy]="isTicketsLoading()">
+                @for (ticket of tickets(); track ticket.id) {
+                  <article class="ticket-row">
+                    <div class="ticket-row__head">
+                      <div>
+                        <strong>{{ ticketTitle(ticket) }}</strong>
+                        <small>{{ ticket.code }}</small>
+                      </div>
+
+                      <div class="ticket-row__aside">
+                        <span class="status-pill" [attr.data-tone]="ticketStatus(ticket).tone">
+                          {{ ticketStatus(ticket).label }}
+                        </span>
+
+                        @if (canValidateTicket(ticket)) {
+                          <button
+                            class="secondary-action ticket-action-button"
+                            type="button"
+                            (click)="openValidationModal(ticket)"
+                          >
+                            Skasuj
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <dl class="detail-list">
+                      <div>
+                        <dt>Zakup</dt>
+                        <dd>{{ ticket.purchaseDate | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                      </div>
+                      <div>
+                        <dt>Cena</dt>
+                        <dd>{{ ticket.price | number: '1.2-2' }} PLN</dd>
+                      </div>
+                      @if (ticket.validatedAt) {
+                        <div>
+                          <dt>Skasowany</dt>
+                          <dd>{{ ticket.validatedAt | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                        </div>
+                      }
+                      @if (ticket.validatedVehicleLabel) {
+                        <div>
+                          <dt>Pojazd</dt>
+                          <dd>{{ ticket.validatedVehicleLabel }}</dd>
+                        </div>
+                      }
+                      @if (ticket.validFrom) {
+                        <div>
+                          <dt>Wazny od</dt>
+                          <dd>{{ ticket.validFrom | date: 'dd.MM.yyyy' }}</dd>
+                        </div>
+                      }
+                      @if (ticket.validTo) {
+                        <div>
+                          <dt>Wazny do</dt>
+                          <dd>{{ ticket.validTo | date: 'dd.MM.yyyy' }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  </article>
+                }
+
+                @for (placeholder of emptyTicketSlots(); track placeholder) {
+                  <article class="ticket-row ticket-row--placeholder ticket-row--ticket-placeholder" aria-hidden="true"></article>
+                }
+              </div>
+
+              @if (isTicketsLoading() && tickets().length > 0) {
+                <div class="collection-loading-overlay" aria-hidden="true">
+                  <span class="collection-loading-spinner"></span>
+                </div>
+              }
+            </div>
+
+          }
+
+          @if (ticketTotalElements() > 0) {
+            <app-pagination-controls
+              [page]="ticketPage()"
+              [size]="ticketPageSize()"
+              [totalElements]="ticketTotalElements()"
+              [totalPages]="ticketTotalPages()"
+              [first]="ticketFirstPage()"
+              [last]="ticketLastPage()"
+              [isLoading]="isTicketsLoading()"
+              density="compact"
+              [sizeOptions]="ticketPageSizeOptions"
+              itemLabel="biletow"
+              (pageChanged)="changeTicketPage($event)"
+              (sizeChanged)="changeTicketPageSize($event)"
+            />
+          }
+        </article>
+      </section>
+    }
+
+    @case ('profile') {
+      <section class="insight-grid section-spacing profile-grid">
+        <article class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">O mnie</p>
+            </div>
+          </div>
+
+          <div class="profile-fields">
+            @for (field of profileFields(); track field.label) {
+              <article class="profile-card">
+                <span>{{ field.label }}</span>
+                <strong>{{ field.value }}</strong>
+              </article>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Podsumowanie</p>
+            </div>
+          </div>
+
+          <div class="profile-fields">
+            <article class="profile-card">
+              <span>Saldo</span>
+              <strong>{{ (authStore.user()?.balance ?? 0) | number: '1.2-2' }} PLN</strong>
+            </article>
+            <article class="profile-card">
+              <span>Liczba biletow</span>
+              <strong>{{ ticketTotalElements() }}</strong>
+            </article>
+            <article class="profile-card">
+              <span>Liczba transakcji</span>
+              <strong>{{ transactionTotalElements() }}</strong>
+            </article>
+            <article class="profile-card">
+              <span>Ostatnia aktywnosc</span>
+              <strong>
+                @if (latestTransaction(); as latestTransaction) {
+                  {{ latestTransaction.createdAt | date: 'dd.MM.yyyy, HH:mm' }}
+                } @else {
+                  Brak historii
+                }
+              </strong>
+            </article>
+          </div>
+        </article>
+      </section>
+    }
+  }
+}
+
+@if (selectedValidationTicket(); as selectedValidationTicket) {
+  <app-ticket-validation-modal
+    [title]="ticketTitle(selectedValidationTicket)"
+    [form]="validationForm"
+    [error]="validationError()"
+    [isSubmitting]="isValidationPending()"
+    (closeRequested)="closeValidationModal()"
+    (submitRequested)="submitValidation()"
+  />
+}

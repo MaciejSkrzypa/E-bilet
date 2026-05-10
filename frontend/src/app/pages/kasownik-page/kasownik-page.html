@@ -1,0 +1,126 @@
+<section class="centered-page">
+  <article class="panel wide-panel">
+    <p class="eyebrow">Kasowanie biletu</p>
+    <h1>Aktywuj bilet przed rozpoczeciem przejazdu</h1>
+    <p class="lead">
+      Wpisz kod biletu albo wybierz jeden ze swoich biletow wymagajacych kasowania i podaj numer pojazdu.
+    </p>
+
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+      @if (canUseOwnedTicketPicker()) {
+        <div class="validation-mode-row" aria-label="Wybor sposobu kasowania biletu">
+          <button
+            class="secondary-action mode-button"
+            type="button"
+            [attr.data-active]="validationMode() === 'ticket'"
+            [disabled]="availableTickets().length === 0"
+            (click)="setValidationMode('ticket')"
+          >
+            Wybierz moj bilet
+          </button>
+          <button
+            class="secondary-action mode-button"
+            type="button"
+            [attr.data-active]="validationMode() === 'code'"
+            (click)="setValidationMode('code')"
+          >
+            Wpisz kod biletu
+          </button>
+        </div>
+
+        @if (ownedTicketsError(); as ownedTicketsError) {
+          <p class="message-banner error">{{ ownedTicketsError }}</p>
+        }
+      }
+
+      @if (validationMode() === 'ticket' && canUseOwnedTicketPicker()) {
+        <label class="field">
+          <span>Wybierz bilet do skasowania</span>
+
+          @if (isLoadingOwnedTickets()) {
+            <p class="subtle-copy">Ladowanie biletow gotowych do skasowania...</p>
+          } @else if (availableTickets().length === 0) {
+            <p class="message-banner">Nie masz obecnie biletow wymagajacych kasowania.</p>
+          } @else {
+            <div class="ticket-picker">
+              <select class="ticket-picker__select" formControlName="selectedTicketCode">
+                @for (ticketOption of availableTickets(); track ticketOption.code) {
+                  <option [value]="ticketOption.code">
+                    {{ ticketTitle(ticketOption) }} · {{ ticketOption.purchaseDate | date: 'dd.MM.yyyy, HH:mm' }}
+                  </option>
+                }
+              </select>
+
+              @if (selectedOwnedTicket(); as selectedOwnedTicket) {
+                <div class="ticket-picker__details">
+                  <strong>{{ ticketTitle(selectedOwnedTicket) }}</strong>
+                  <span>Kupiono {{ selectedOwnedTicket.purchaseDate | date: 'dd.MM.yyyy, HH:mm' }}</span>
+                  <p class="ticket-picker__uuid">UUID biletu: {{ selectedOwnedTicket.code }}</p>
+                </div>
+              }
+            </div>
+          }
+
+          @if (form.controls.selectedTicketCode.invalid && form.controls.selectedTicketCode.touched) {
+            <small>Wybierz bilet do skasowania.</small>
+          }
+        </label>
+      } @else {
+        <label class="field">
+          <span>Kod biletu</span>
+          <input type="text" formControlName="code" placeholder="np. 123e4567-e89b-12d3-a456-426614174000" />
+          @if (form.controls.code.invalid && form.controls.code.touched) {
+            <small>Podaj poprawny kod biletu.</small>
+          }
+        </label>
+      }
+
+      <app-vehicle-autocomplete-field
+        [queryControl]="form.controls.vehicleQuery"
+        [vehicleIdControl]="form.controls.vehicleId"
+      />
+
+      @if (errorMessage(); as errorMessage) {
+        <p class="message-banner error">{{ errorMessage }}</p>
+      }
+
+      @if (successMessage(); as successMessage) {
+        <p class="message-banner success">{{ successMessage }}</p>
+      }
+
+      <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Kasowanie...' : 'Skasuj bilet' }}
+      </button>
+    </form>
+
+    @if (ticket(); as ticket) {
+      <section class="stack-list">
+        <article class="ticket-row">
+          <div class="ticket-row__head">
+            <div>
+              <strong>{{ ticketTitle(ticket) }}</strong>
+            </div>
+            <span class="tag">{{ ticket.price | number: '1.2-2' }} PLN</span>
+          </div>
+
+          <dl class="detail-list">
+            <div>
+              <dt>Kod</dt>
+              <dd>{{ ticket.code }}</dd>
+            </div>
+            <div>
+              <dt>Skasowany</dt>
+              <dd>{{ ticket.validatedAt | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+            </div>
+            @if (ticket.validatedVehicleLabel) {
+              <div>
+                <dt>Pojazd</dt>
+                <dd>{{ ticket.validatedVehicleLabel }}</dd>
+              </div>
+            }
+          </dl>
+        </article>
+      </section>
+    }
+  </article>
+</section>

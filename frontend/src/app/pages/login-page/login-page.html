@@ -1,0 +1,38 @@
+<section class="centered-page">
+  <article class="panel auth-card">
+    <p class="eyebrow">Witaj ponownie</p>
+    <h1>Zaloguj sie do swojego konta</h1>
+    <p class="lead compact">Sprawdz swoje bilety, saldo i ostatnia aktywnosc w jednym miejscu.</p>
+
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field">
+        <span>Adres e-mail</span>
+        <input type="email" formControlName="email" placeholder="np. anna.nowak@example.com" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <small>Podaj poprawny adres e-mail.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Haslo</span>
+        <input type="password" formControlName="password" placeholder="Wpisz haslo" />
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <small>Haslo jest wymagane.</small>
+        }
+      </label>
+
+      @if (errorMessage(); as errorMessage) {
+        <p class="message-banner error">{{ errorMessage }}</p>
+      }
+
+      <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Logowanie...' : 'Zaloguj sie' }}
+      </button>
+    </form>
+
+    <p class="subtle-copy">
+      Nie masz jeszcze konta?
+      <a routerLink="/register">Przejdz do rejestracji</a>
+    </p>
+  </article>
+</section>

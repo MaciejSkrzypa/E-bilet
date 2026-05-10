@@ -36,6 +36,26 @@ class TicketOfferIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
+	void filteringBySingleTypeWorks() throws Exception {
+		mockMvc.perform(get("/api/offers?type=TIME&sort=id,asc&size=8"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(4))
+				.andExpect(jsonPath("$.content.length()").value(4))
+				.andExpect(jsonPath("$.content[0].type").value("TIME"))
+				.andExpect(jsonPath("$.content[3].type").value("TIME"));
+	}
+
+	@Test
+	void filteringByMultipleTypesWorks() throws Exception {
+		mockMvc.perform(get("/api/offers?type=SINGLE,PERIOD&sort=id,asc&size=8"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(4))
+				.andExpect(jsonPath("$.content.length()").value(4))
+				.andExpect(jsonPath("$.content[0].type").value("SINGLE"))
+				.andExpect(jsonPath("$.content[3].type").value("PERIOD"));
+	}
+
+	@Test
 	void sortByPriceAsc() throws Exception {
 		mockMvc.perform(get("/api/offers?sort=price,asc&size=8"))
 				.andExpect(status().isOk())

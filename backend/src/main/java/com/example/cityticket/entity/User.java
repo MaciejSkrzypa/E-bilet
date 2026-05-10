@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,7 +11,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+
+import com.example.cityticket.util.AppTime;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,7 +54,6 @@ public class User {
 	@Column(nullable = false, precision = 10, scale = 2)
 	private BigDecimal balance = BigDecimal.ZERO;
 
-	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -64,5 +65,12 @@ public class User {
 		this.lastName = lastName;
 		this.dateOfBirth = dateOfBirth;
 		this.role = role;
+	}
+
+	@PrePersist
+	void setCreatedAtIfMissing() {
+		if (createdAt == null) {
+			createdAt = AppTime.nowDateTime();
+		}
 	}
 }

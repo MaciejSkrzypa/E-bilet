@@ -56,8 +56,24 @@ services:
       retries: 10
       start_period: 5s
 
+  pgadmin:
+    image: dpage/pgadmin4:8
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+      PGADMIN_CONFIG_LOGIN_BANNER: '"eBilet Miejski - pgAdmin"'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   frontend_node_modules:
   maven_cache:
   backend_target:
   postgres_data:
+  pgadmin_data:

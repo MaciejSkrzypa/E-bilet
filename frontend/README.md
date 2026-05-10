@@ -1,59 +1,70 @@
-# Frontend
+# Frontend eBilet
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Angular frontend dla projektu elektronicznego biletu miejskiego, zintegrowany z backendem Spring Boot z katalogu `../backend`.
 
-## Development server
+## Funkcje
 
-To start a local development server, run:
+- publiczna oferta biletowa pobierana z `GET /api/offers`
+- logowanie i rejestracja pasazera przez JWT
+- osobny widok dla `PASSENGER`
+- osobny widok dla `INSPECTOR`
+- publiczny symulator kasownika dla biletow `SINGLE` i `TIME`
+- doladowanie salda, zakup biletow, historia transakcji i lista kodow biletow
+- guardy roli, interceptor `Authorization: Bearer ...`, walidacje formularzy i obsluga bledow backendu
 
-```bash
-ng serve
-```
+## Wymagania
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js 22+
+- backend dostepny pod `http://localhost:8080`
 
-## Code scaffolding
+Frontend sam wylicza adres backendu jako `http://<hostname>:8080`, zgodnie z CORS ustawionym w backendzie.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Uruchomienie lokalne
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+1. Uruchom backend Spring Boot z katalogu `backend/`.
+2. W katalogu `frontend/` uruchom:
 
 ```bash
-ng build
+npm install
+npm run start
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+3. Otworz `http://localhost:4200`.
 
-## Running unit tests
+## Uruchomienie przez Docker Compose
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Z katalogu glownego projektu:
 
 ```bash
-ng test
+docker compose up --build
 ```
 
-## Running end-to-end tests
+Frontend bedzie dostepny pod `http://localhost:4200`, backend pod `http://localhost:8080`.
 
-For end-to-end (e2e) testing, run:
+## Konto biletera w development
+
+Backend seeduje konto:
+
+- login: `inspector`
+- haslo: `inspector`
+
+## Testy i coverage
 
 ```bash
-ng e2e
+npm run build
+npm run test:coverage
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Ostatnio zweryfikowane coverage:
 
-## Additional Resources
+- Statements: `87.57%`
+- Branches: `84.98%`
+- Functions: `83.60%`
+- Lines: `90.40%`
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Raport coverage zapisuje sie w `coverage/frontend/coverage-summary.json`.
+
+## Uwagi
+
+- Backend nie udostepnia endpointu do listy pojazdow, mimo ze `vehicleId` jest wymagane przez kasownik i kontrole biletu.
+- Szczegoly analizy backendu, decyzje projektowe i opis tego ograniczenia sa w `../FRONTEND_NOTES.md`.

@@ -1,0 +1,45 @@
+<div class="modal-backdrop" (click)="close()">
+  <section class="panel top-up-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close-x" type="button" (click)="close()" aria-label="Zamknij modal">×</button>
+
+    <div class="top-up-modal__head">
+      <div>
+        <p class="eyebrow">Doladowanie konta</p>
+        <h2>Wybierz kwote doladowania</h2>
+      </div>
+    </div>
+
+    <form class="form-grid" [formGroup]="form()" (ngSubmit)="submit()">
+      <div class="preset-grid">
+        @for (amount of presetAmounts(); track amount) {
+          <button
+            class="preset-button"
+            type="button"
+            [attr.data-active]="form().controls.amount.value === amount"
+            (click)="selectPreset(amount)"
+          >
+            {{ amount }} PLN
+          </button>
+        }
+      </div>
+
+      <label class="field">
+        <span>Wlasna kwota</span>
+        <input type="number" step="0.01" min="0" formControlName="amount" placeholder="np. 25" />
+        @if (form().controls.amount.invalid && form().controls.amount.touched) {
+          <small>Kwota musi byc wieksza od 0.00 PLN.</small>
+        }
+      </label>
+
+      @if (error(); as errorMessage) {
+        <p class="message-banner error">{{ errorMessage }}</p>
+      }
+
+      <div class="modal-actions">
+        <button class="primary-action action-button" type="submit" [disabled]="form().invalid || isSubmitting()">
+          {{ isSubmitting() ? 'Doladowanie...' : 'Doladuj kwote' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

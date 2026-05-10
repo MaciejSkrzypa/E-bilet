@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+
+.wide-panel {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+}
+
+.wide-panel > .lead {
+  white-space: nowrap;
+}
+
+.form-grid {
+  width: min(100%, 42rem);
+  justify-self: center;
+}
+
+.form-grid > .field,
+.form-grid > app-vehicle-autocomplete-field {
+  width: min(100%, 32rem);
+  justify-self: center;
+}
+
+.form-grid > .field > span,
+.form-grid > .field > small {
+  text-align: center;
+}
+
+.form-grid > .wide-button {
+  width: min(100%, 32rem);
+  justify-self: center;
+}
+
+.result-card {
+  margin-top: 0.5rem;
+}
+
+.result-card__head {
+  margin-bottom: 1rem;
+}
+
+.profile-fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.profile-card span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.profile-card strong {
+  line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+  .wide-panel > .lead {
+    white-space: normal;
+  }
+}

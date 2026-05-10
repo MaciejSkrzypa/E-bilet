@@ -1,43 +1,55 @@
-<main class="shell">
-  <section class="panel">
-    <p class="eyebrow">Frontend -> Backend</p>
-    <h1>{{ title }}</h1>
-    <p class="lead">
-      Click the button to call <code>/health</code> and display the latest backend response.
-    </p>
+<div class="app-shell">
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
 
-    <button
-      class="health-button"
-      type="button"
-      (click)="fetchHealth()"
-      [disabled]="isLoading()"
-    >
-      {{ isLoading() ? 'Checking...' : 'Check backend health' }}
-    </button>
+  <header class="topbar">
+    <a class="brand" [routerLink]="brandRoute()">
+      <span class="brand-mark">eB</span>
+      <strong>eBilet Miejski</strong>
+    </a>
 
-    @if (errorMessage(); as errorMessage) {
-      <p class="message error">{{ errorMessage }}</p>
-    }
+    <nav class="topnav" aria-label="Glowna nawigacja">
+      @for (item of navItems(); track item.href) {
+        <a
+          [class.active]="isNavItemActive(item)"
+          [routerLink]="item.href"
+          [fragment]="item.fragment"
+        >
+          {{ item.label }}
+        </a>
+      }
+    </nav>
 
-    @if (health(); as health) {
-      <section class="result">
-        <p class="message success">Backend responded successfully.</p>
-
-        <dl class="response-grid">
-          <div>
-            <dt>status</dt>
-            <dd>{{ health.status }}</dd>
+    <div class="user-actions">
+      @if (currentUser(); as user) {
+        @if (user.role === 'PASSENGER') {
+          <div class="balance-chip">
+            <strong>{{ user.balance | number: '1.2-2' }} PLN</strong>
+            <button class="top-up-button" type="button" (click)="openTopUpModal()" aria-label="Doladuj konto">+</button>
           </div>
-          <div>
-            <dt>number</dt>
-            <dd>{{ health.number }}</dd>
-          </div>
-        </dl>
+        }
 
-        <pre class="json">{{ health | json }}</pre>
-      </section>
-    } @else {
-      <p class="message idle">No response yet.</p>
-    }
-  </section>
-</main>
+        <button class="ghost-button" type="button" (click)="logout()">Wyloguj</button>
+      } @else {
+        <a class="ghost-link" routerLink="/login">Logowanie</a>
+        <a class="solid-link" routerLink="/register">Rejestracja</a>
+      }
+    </div>
+  </header>
+
+  <main class="page-wrap">
+    <router-outlet />
+  </main>
+</div>
+
+@if (isTopUpModalOpen()) {
+  <app-top-up-modal
+    [presetAmounts]="presetTopUpAmounts"
+    [form]="topUpForm"
+    [error]="topUpError()"
+    [isSubmitting]="isTopUpSubmitting()"
+    (closeRequested)="closeTopUpModal()"
+    (presetSelected)="selectTopUpAmount($event)"
+    (submitRequested)="submitTopUp()"
+  />
+}

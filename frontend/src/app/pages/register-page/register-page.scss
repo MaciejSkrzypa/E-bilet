@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.auth-card {
+  width: min(100%, 560px);
+  display: grid;
+  gap: 1rem;
+}
+
+.subtle-copy {
+  text-align: center;
+}

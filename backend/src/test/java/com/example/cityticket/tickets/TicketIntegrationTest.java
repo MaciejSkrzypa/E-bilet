@@ -274,6 +274,109 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
+	void filtersByCurrentlyActiveTickets() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(token, "300.00");
+		Long single = offerId(TicketType.SINGLE, Fare.NORMAL, null);
+		Long time = offerId(TicketType.TIME, Fare.NORMAL, 30);
+		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
+		LocalDate today = LocalDate.now();
+
+		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + single + "}"))
+				.andExpect(status().isCreated());
+
+		var timePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + time + "}"))
+				.andExpect(status().isCreated())
+				.andReturn();
+
+		String timeCode = objectMapper.readTree(timePurchase.getResponse().getContentAsString()).get("code").asText();
+
+		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + timeCode + "\",\"vehicleId\":1}"))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + period + ",\"validFrom\":\"" + today + "\",\"validTo\":\"" + today.plusDays(7) + "\"}"))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + period + ",\"validFrom\":\"" + today.plusDays(2) + "\",\"validTo\":\"" + today.plusDays(5) + "\"}"))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/tickets?active=true").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(2))
+				.andExpect(jsonPath("$.content[0].type").exists())
+				.andExpect(jsonPath("$.content[*].type").isArray());
+	}
+
+	@Test
+	void filtersByMultipleStatuses() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(token, "300.00");
+		Long single = offerId(TicketType.SINGLE, Fare.NORMAL, null);
+		Long time = offerId(TicketType.TIME, Fare.NORMAL, 30);
+		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
+		LocalDate today = LocalDate.now();
+
+		var singlePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + single + "}"))
+				.andExpect(status().isCreated())
+				.andReturn();
+
+		String singleCode = objectMapper.readTree(singlePurchase.getResponse().getContentAsString()).get("code").asText();
+
+		var timePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + time + "}"))
+				.andExpect(status().isCreated())
+				.andReturn();
+
+		String timeCode = objectMapper.readTree(timePurchase.getResponse().getContentAsString()).get("code").asText();
+
+		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + timeCode + "\",\"vehicleId\":1}"))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + period + ",\"validFrom\":\"" + today + "\",\"validTo\":\"" + today.plusDays(7) + "\"}"))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"offerId\":" + period + ",\"validFrom\":\"" + today.plusDays(3) + "\",\"validTo\":\"" + today.plusDays(5) + "\"}"))
+				.andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/tickets?status=ACTIVE").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(2));
+
+		mockMvc.perform(get("/api/tickets?status=REQUIRES_VALIDATION").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(1))
+				.andExpect(jsonPath("$.content[0].code").value(singleCode));
+
+		mockMvc.perform(get("/api/tickets?status=ACTIVE,REQUIRES_VALIDATION").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(3));
+
+		mockMvc.perform(get("/api/tickets?status=VALIDATED").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(1))
+				.andExpect(jsonPath("$.content[0].code").value(timeCode));
+	}
+
+	@Test
 	void rejectsBadEnumInTypeFilter() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 

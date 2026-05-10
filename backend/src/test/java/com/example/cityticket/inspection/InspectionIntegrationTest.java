@@ -129,6 +129,29 @@ class InspectionIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
+	void singleValidatedOnPreviousDayIsInvalidEvenInSameVehicle() throws Exception {
+		String passenger = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(passenger, "10.00");
+		String code = purchase(passenger, offerId(TicketType.SINGLE, Fare.NORMAL, null), null, null);
+		Long vid = firstVehicleId();
+		punch(code, vid);
+
+		var ticket = ticketRepository.findByCode(UUID.fromString(code)).orElseThrow();
+		ticket.setValidatedAt(ticket.getValidatedAt().minusDays(10));
+		ticketRepository.save(ticket);
+
+		String inspector = createInspectorAndLogin("ins@example.com", "ins123");
+
+		mockMvc.perform(post("/api/inspection/check")
+				.header("Authorization", bearer(inspector))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + vid + "}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.valid").value(false))
+				.andExpect(jsonPath("$.reason", org.hamcrest.Matchers.containsString("validation day has passed")));
+	}
+
+	@Test
 	void unpunchedSingleIsInvalid() throws Exception {
 		String passenger = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(passenger, "10.00");
