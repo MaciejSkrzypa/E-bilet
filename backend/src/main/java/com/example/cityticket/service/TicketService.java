@@ -1,10 +1,10 @@
 package com.example.cityticket.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +44,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TicketService {
 
+	private static final String USER_NOT_FOUND = "User not found";
+	private static final String OFFER_NOT_FOUND = "Offer not found";
+	private static final String TICKET_NOT_FOUND = "Ticket not found";
+	private static final String VEHICLE_NOT_FOUND = "Vehicle not found";
+	private static final String INSPECTION_VEHICLE_NOT_FOUND = "Inspection vehicle not found";
+
 	private final UserRepository userRepository;
 	private final TicketOfferRepository ticketOfferRepository;
 	private final TicketRepository ticketRepository;
@@ -52,12 +58,8 @@ public class TicketService {
 
 	@Transactional
 	public TicketResponse purchase(String email, PurchaseRequest request) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-
-		TicketOffer offer = ticketOfferRepository.findById(request.offerId())
-				.filter(TicketOffer::isActive)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offer not found"));
+		User user = loadUser(email);
+		TicketOffer offer = loadActiveOffer(request.offerId());
 
 		validateRequestAgainstOfferType(offer, request);
 
@@ -86,8 +88,7 @@ public class TicketService {
 	@Transactional(readOnly = true)
 	public Page<TicketResponse> findMyTickets(String email, List<TicketType> types, List<TicketFilterStatus> statuses,
 			Boolean validated, Boolean active, Pageable pageable) {
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+		User user = loadUser(email);
 
 		Specification<Ticket> spec = ownedBy(user.getId());
 		LocalDate today = AppTime.today();
@@ -184,20 +185,9 @@ public class TicketService {
 
 	@Transactional
 	public TicketResponse validate(UUID code, Long vehicleId) {
-		Ticket ticket = ticketRepository.findByCode(code)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found"));
-
-		if (ticket.getType() == TicketType.PERIOD) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"PERIOD tickets do not require validation (no kasowanie)");
-		}
-		if (ticket.getValidatedAt() != null) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT,
-					"Ticket already validated at " + ticket.getValidatedAt());
-		}
-
-		Vehicle vehicle = vehicleRepository.findById(vehicleId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
+		Ticket ticket = loadTicket(code);
+		ensureCanBeValidated(ticket);
+		Vehicle vehicle = loadVehicle(vehicleId);
 
 		ticket.setValidatedAt(AppTime.nowDateTime());
 		ticket.setValidatedVehicle(vehicle);
@@ -206,68 +196,99 @@ public class TicketService {
 
 	@Transactional(readOnly = true)
 	public InspectionResponse inspect(UUID code, Long inspectionVehicleId) {
-		Vehicle inspectionVehicle = vehicleRepository.findById(inspectionVehicleId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-						"Inspection vehicle not found"));
-
-		Ticket ticket = ticketRepository.findByCode(code).orElse(null);
+		Vehicle inspectionVehicle = loadInspectionVehicle(inspectionVehicleId);
+		Ticket ticket = findTicketOrNull(code);
 		if (ticket == null) {
 			return new InspectionResponse(false, "Ticket not found", null);
 		}
 
 		LocalDateTime now = AppTime.nowDateTime();
 		LocalDate today = AppTime.today();
-		String reason;
-		boolean valid;
+		InspectionDecision decision = inspectTicket(ticket, inspectionVehicle, today, now);
+		return new InspectionResponse(decision.valid(), decision.reason(), TicketResponse.from(ticket));
+	}
 
-		switch (ticket.getType()) {
-			case PERIOD -> {
-				if (!today.isBefore(ticket.getValidFrom()) && !today.isAfter(ticket.getValidTo())) {
-					valid = true;
-					reason = "Period ticket within validity range";
-				} else {
-					valid = false;
-					reason = "Inspection date outside [validFrom, validTo]";
-				}
-			}
-			case SINGLE -> {
-				if (ticket.getValidatedAt() == null) {
-					valid = false;
-					reason = "Ticket has not been validated (kasowanie missing)";
-				} else if (!ticket.getValidatedAt().toLocalDate().equals(today)) {
-					valid = false;
-					reason = "Single ticket expired: validation day has passed";
-				} else if (!ticket.getValidatedVehicle().getId().equals(inspectionVehicle.getId())) {
-					valid = false;
-					reason = "Single ticket validated in a different vehicle ("
-							+ ticket.getValidatedVehicle().getLabel() + ")";
-				} else {
-					valid = true;
-					reason = "Single ticket valid in this vehicle";
-				}
-			}
-			case TIME -> {
-				if (ticket.getValidatedAt() == null) {
-					valid = false;
-					reason = "Ticket has not been validated (kasowanie missing)";
-				} else {
-					LocalDateTime expiresAt = ticket.getValidatedAt().plusMinutes(ticket.getDurationMinutes());
-					if (now.isAfter(expiresAt)) {
-						valid = false;
-						reason = "Time ticket expired at " + expiresAt;
-					} else {
-						valid = true;
-						reason = "Time ticket valid until " + expiresAt;
-					}
-				}
-			}
-			default -> {
-				valid = false;
-				reason = "Unknown ticket type";
-			}
+	private User loadUser(String email) {
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, USER_NOT_FOUND));
+	}
+
+	private TicketOffer loadActiveOffer(Long offerId) {
+		return ticketOfferRepository.findById(offerId)
+				.filter(TicketOffer::isActive)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, OFFER_NOT_FOUND));
+	}
+
+	private Ticket loadTicket(UUID code) {
+		return ticketRepository.findByCode(code)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, TICKET_NOT_FOUND));
+	}
+
+	private Ticket findTicketOrNull(UUID code) {
+		return ticketRepository.findByCode(code).orElse(null);
+	}
+
+	private Vehicle loadVehicle(Long vehicleId) {
+		return vehicleRepository.findById(vehicleId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, VEHICLE_NOT_FOUND));
+	}
+
+	private Vehicle loadInspectionVehicle(Long vehicleId) {
+		return vehicleRepository.findById(vehicleId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, INSPECTION_VEHICLE_NOT_FOUND));
+	}
+
+	private void ensureCanBeValidated(Ticket ticket) {
+		if (ticket.getType() == TicketType.PERIOD) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"PERIOD tickets do not require validation (no kasowanie)");
+		}
+		if (ticket.getValidatedAt() != null) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"Ticket already validated at " + ticket.getValidatedAt());
+		}
+	}
+
+	private InspectionDecision inspectTicket(Ticket ticket, Vehicle inspectionVehicle, LocalDate today,
+			LocalDateTime now) {
+		return switch (ticket.getType()) {
+			case PERIOD -> inspectPeriodTicket(ticket, today);
+			case SINGLE -> inspectSingleTicket(ticket, inspectionVehicle, today);
+			case TIME -> inspectTimeTicket(ticket, now);
+		};
+	}
+
+	private InspectionDecision inspectPeriodTicket(Ticket ticket, LocalDate today) {
+		if (!today.isBefore(ticket.getValidFrom()) && !today.isAfter(ticket.getValidTo())) {
+			return new InspectionDecision(true, "Period ticket within validity range");
+		}
+		return new InspectionDecision(false, "Inspection date outside [validFrom, validTo]");
+	}
+
+	private InspectionDecision inspectSingleTicket(Ticket ticket, Vehicle inspectionVehicle, LocalDate today) {
+		if (ticket.getValidatedAt() == null) {
+			return new InspectionDecision(false, "Ticket has not been validated (kasowanie missing)");
+		}
+		if (!ticket.getValidatedAt().toLocalDate().equals(today)) {
+			return new InspectionDecision(false, "Single ticket expired: validation day has passed");
+		}
+		if (!ticket.getValidatedVehicle().getId().equals(inspectionVehicle.getId())) {
+			return new InspectionDecision(false, "Single ticket validated in a different vehicle ("
+					+ ticket.getValidatedVehicle().getLabel() + ")");
+		}
+		return new InspectionDecision(true, "Single ticket valid in this vehicle");
+	}
+
+	private InspectionDecision inspectTimeTicket(Ticket ticket, LocalDateTime now) {
+		if (ticket.getValidatedAt() == null) {
+			return new InspectionDecision(false, "Ticket has not been validated (kasowanie missing)");
 		}
 
-		return new InspectionResponse(valid, reason, TicketResponse.from(ticket));
+		LocalDateTime expiresAt = ticket.getValidatedAt().plusMinutes(ticket.getDurationMinutes());
+		if (now.isAfter(expiresAt)) {
+			return new InspectionDecision(false, "Time ticket expired at " + expiresAt);
+		}
+		return new InspectionDecision(true, "Time ticket valid until " + expiresAt);
 	}
 
 	private void validateRequestAgainstOfferType(TicketOffer offer, PurchaseRequest request) {
@@ -301,5 +322,8 @@ public class TicketService {
 		}
 		long days = ChronoUnit.DAYS.between(request.validFrom(), request.validTo()) + 1;
 		return offer.getPrice().multiply(BigDecimal.valueOf(days));
+	}
+
+	private record InspectionDecision(boolean valid, String reason) {
 	}
 }
