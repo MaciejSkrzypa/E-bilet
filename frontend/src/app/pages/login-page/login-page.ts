@@ -3,7 +3,8 @@ import { ReactiveFormsModule, Validators, NonNullableFormBuilder } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
-import { routeForRole } from '../../core/guards/auth/auth.guards';
+import { Role } from '../../core/models/api/api.models';
+import { getRoleRouteLocation } from '../../core/routing/role-routing.util';
 import { AuthApiService } from '../../core/services/api/auth-api.service';
 import { AuthStoreService } from '../../core/services/auth-store/auth-store.service';
 import { getErrorMessage } from '../../shared/utils/http-error/http-error.util';
@@ -43,7 +44,7 @@ export class LoginPageComponent {
       .subscribe({
         next: (response) => {
           this.authStore.login(response);
-          void this.navigateAfterLogin(routeForRole(response.user.role));
+          void this.navigateAfterLogin(response.user.role);
         },
         error: (error) => {
           this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie zalogowac.'));
@@ -51,20 +52,16 @@ export class LoginPageComponent {
       });
   }
 
-  private navigateAfterLogin(defaultTarget: string): Promise<boolean> {
+  private navigateAfterLogin(role: Role): Promise<boolean> {
     const redirectTo = this.route.snapshot.queryParamMap.get('redirectTo');
 
     if (redirectTo && redirectTo.startsWith('/')) {
       return this.router.navigateByUrl(redirectTo, { replaceUrl: true });
     }
 
-    if (defaultTarget === '/passenger') {
-      return this.router.navigate(['/passenger'], {
-        fragment: 'finance',
-        replaceUrl: true,
-      });
-    }
-
-    return this.router.navigateByUrl(defaultTarget, { replaceUrl: true });
+    const target = getRoleRouteLocation(role);
+    return this.router.navigate(target.commands, {
+      replaceUrl: true,
+    });
   }
 }

@@ -13,13 +13,9 @@ import { uuidPattern } from '../../shared/utils/form-validators/form-validators'
 import { getErrorMessage } from '../../shared/utils/http-error/http-error.util';
 import { getInspectionReasonLabel } from '../../shared/utils/inspection-presentation/inspection-presentation.util';
 import { getTicketTitle, getTicketTypeLabel } from '../../shared/utils/ticket-presentation/ticket-presentation.util';
+import { buildUserProfileFields } from '../../shared/utils/user-presentation/user-presentation.util';
 
 type InspectorSection = 'check' | 'profile';
-
-interface ProfileField {
-  label: string;
-  value: string;
-}
 
 @Component({
   selector: 'app-inspector-dashboard-page',
@@ -53,20 +49,7 @@ export class InspectorDashboardPageComponent {
       validators: [Validators.required, Validators.min(1)],
     }),
   });
-  protected readonly profileFields = computed<ProfileField[]>(() => {
-    const user = this.authStore.user();
-
-    if (!user) {
-      return [];
-    }
-
-    return [
-      { label: 'Adres e-mail', value: user.email },
-      { label: 'Imie', value: user.firstName },
-      { label: 'Nazwisko', value: user.lastName },
-      { label: 'Data urodzenia', value: this.formatDateLabel(user.dateOfBirth) },
-    ];
-  });
+  protected readonly profileFields = computed(() => buildUserProfileFields(this.authStore.user()));
 
   constructor() {
     this.currentSection.set(this.normalizeSection(this.route.snapshot.data['section'] as string | undefined));
@@ -117,15 +100,5 @@ export class InspectorDashboardPageComponent {
 
   private normalizeSection(value: string | undefined): InspectorSection {
     return value === 'profile' ? 'profile' : 'check';
-  }
-
-  private formatDateLabel(dateValue: string): string {
-    const [year, month, day] = dateValue.split('-');
-
-    if (!year || !month || !day) {
-      return dateValue;
-    }
-
-    return `${day}.${month}.${year}`;
   }
 }

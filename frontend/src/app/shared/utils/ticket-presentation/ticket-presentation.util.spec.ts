@@ -74,7 +74,14 @@ describe('ticket presentation util', () => {
       validatedAt: '2026-05-09T09:00:00',
     };
 
-    expect(getTicketStatus(singleTicket).tone).toBe('success');
+    expect(getTicketStatus(singleTicket, new Date('2026-05-09T12:00:00'))).toEqual({
+      label: 'Skasowany w pojezdzie',
+      tone: 'success',
+    });
+    expect(getTicketStatus(singleTicket, new Date('2026-05-10T08:00:00'))).toEqual({
+      label: 'Bilet jednorazowy wygasl',
+      tone: 'danger',
+    });
 
     const activeTimeStatus = getTicketStatus(activeTimeTicket, new Date('2026-05-09T10:10:00'));
     expect(activeTimeStatus.tone).toBe('success');

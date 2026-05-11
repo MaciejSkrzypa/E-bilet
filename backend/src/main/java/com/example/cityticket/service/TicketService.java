@@ -154,11 +154,19 @@ public class TicketService {
 			Expression<java.time.Duration> oneMinute = hcb.duration(1, TemporalUnit.MINUTE);
 			Expression<java.time.Duration> ticketDuration = hcb.durationScaled(root.get("durationMinutes"), oneMinute);
 			Expression<LocalDateTime> expiresAt = hcb.addDuration(root.get("validatedAt"), ticketDuration);
+			LocalDateTime startOfToday = today.atStartOfDay();
+			LocalDateTime startOfTomorrow = today.plusDays(1).atStartOfDay();
 
 			var activePeriodTicket = cb.and(
 					cb.equal(root.get("type"), TicketType.PERIOD),
 					cb.lessThanOrEqualTo(root.get("validFrom"), today),
 					cb.greaterThanOrEqualTo(root.get("validTo"), today));
+
+			var activeSingleTicket = cb.and(
+					cb.equal(root.get("type"), TicketType.SINGLE),
+					cb.isNotNull(root.get("validatedAt")),
+					cb.greaterThanOrEqualTo(root.get("validatedAt"), startOfToday),
+					cb.lessThan(root.get("validatedAt"), startOfTomorrow));
 
 			var activeTimeTicket = cb.and(
 					cb.equal(root.get("type"), TicketType.TIME),
@@ -166,7 +174,7 @@ public class TicketService {
 					cb.isNotNull(root.get("durationMinutes")),
 					cb.greaterThanOrEqualTo(expiresAt, now));
 
-			return cb.or(activePeriodTicket, activeTimeTicket);
+			return cb.or(activePeriodTicket, activeSingleTicket, activeTimeTicket);
 		};
 	}
 
