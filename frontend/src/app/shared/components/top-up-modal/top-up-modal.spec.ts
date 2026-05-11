@@ -58,7 +58,7 @@ describe('TopUpModalComponent', () => {
 
     fixture.componentRef.setInput('presetAmounts', [10, 20]);
     fixture.componentRef.setInput('form', form);
-    fixture.componentRef.setInput('error', 'Nie udalo sie doladowac konta.');
+    fixture.componentRef.setInput('error', 'Nie udało się doładować konta.');
     fixture.detectChanges();
 
     const submitButton = fixture.nativeElement.querySelector('.action-button') as HTMLButtonElement;
@@ -66,8 +66,8 @@ describe('TopUpModalComponent', () => {
 
     expect(form.invalid).toBe(true);
     expect(submitButton.disabled).toBe(true);
-    expect(compiled.textContent).toContain('Kwota musi byc wieksza od 0.00 PLN.');
-    expect(compiled.textContent).toContain('Nie udalo sie doladowac konta.');
+    expect(compiled.textContent).toContain('Kwota musi być większa od 0.00 PLN.');
+    expect(compiled.textContent).toContain('Nie udało się doładować konta.');
   });
 
   it('should emit submit request on form submit', () => {

@@ -37,7 +37,7 @@ export const passengerTicketsResolver: ResolveFn<PassengerTicketsResolvedData> =
       catchError((error) =>
         of({
           ticketsPage: null,
-          errorMessage: getErrorMessage(error, 'Nie udalo sie zaladowac listy biletow.'),
+          errorMessage: getErrorMessage(error, 'Nie udało się załadować listy biletów.'),
         }),
       ),
     );
@@ -60,7 +60,7 @@ export const passengerTransactionsResolver: ResolveFn<PassengerTransactionsResol
       catchError((error) =>
         of({
           transactionsPage: null,
-          errorMessage: getErrorMessage(error, 'Nie udalo sie zaladowac historii transakcji.'),
+          errorMessage: getErrorMessage(error, 'Nie udało się załadować historii transakcji.'),
         }),
       ),
     );

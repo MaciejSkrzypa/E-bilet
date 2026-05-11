@@ -7,7 +7,7 @@
     </div>
 
     <div class="tickets-toolbar">
-      <div class="filter-row" aria-label="Filtrowanie typow biletow">
+      <div class="filter-row" aria-label="Filtrowanie typów biletów">
         @for (filter of ticketTypeFilters; track filter.type) {
           <button
             class="filter-chip"
@@ -45,10 +45,10 @@
     }
 
     @if (isTicketsLoading() && !hasTicketsSnapshot()) {
-      <p class="message-banner">Ladowanie biletow...</p>
+      <p class="message-banner">Ładowanie biletów...</p>
     } @else if (hasTicketsSnapshot() && ticketTotalElements() === 0) {
       <p class="lead compact">
-        {{ hasTicketFilters() ? 'Brak biletow spelniajacych wybrane filtry.' : 'Nie masz jeszcze zadnych biletow.' }}
+        {{ hasTicketFilters() ? 'Brak biletów spełniających wybrane filtry.' : 'Nie masz jeszcze żadnych biletów.' }}
       </p>
     } @else if (hasTicketsSnapshot()) {
       <div class="paged-collection-shell">
@@ -101,13 +101,13 @@
                 }
                 @if (ticket.validFrom) {
                   <div>
-                    <dt>Wazny od</dt>
+                    <dt>Ważny od</dt>
                     <dd>{{ ticket.validFrom | date: 'dd.MM.yyyy' }}</dd>
                   </div>
                 }
                 @if (ticket.validTo) {
                   <div>
-                    <dt>Wazny do</dt>
+                    <dt>Ważny do</dt>
                     <dd>{{ ticket.validTo | date: 'dd.MM.yyyy' }}</dd>
                   </div>
                 }
@@ -139,7 +139,7 @@
         [isLoading]="isTicketsLoading()"
         density="compact"
         [sizeOptions]="ticketPageSizeOptions"
-        itemLabel="biletow"
+        itemLabel="biletów"
         (pageChanged)="changeTicketPage($event)"
         (sizeChanged)="changeTicketPageSize($event)"
       />

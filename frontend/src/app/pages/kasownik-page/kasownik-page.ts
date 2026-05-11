@@ -143,7 +143,7 @@ export class KasownikPageComponent {
         },
         error: (error) => {
           this.ticket.set(null);
-          this.errorMessage.set(getErrorMessage(error, 'Kasowanie biletu nie powiodlo sie.'));
+          this.errorMessage.set(getErrorMessage(error, 'Kasowanie biletu nie powiodło się.'));
         },
       });
   }
@@ -178,7 +178,7 @@ export class KasownikPageComponent {
         },
         error: (error) => {
           this.availableTickets.set([]);
-          this.ownedTicketsError.set(getErrorMessage(error, 'Nie udalo sie zaladowac Twoich biletow do skasowania.'));
+          this.ownedTicketsError.set(getErrorMessage(error, 'Nie udało się załadować Twoich biletów do skasowania.'));
           this.setValidationMode('code');
         },
       });

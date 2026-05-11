@@ -53,7 +53,7 @@ describe('PassengerFinanceSectionComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Transakcje konta');
-    expect(compiled.textContent).toContain('Doladowanie');
+    expect(compiled.textContent).toContain('Doładowanie');
     expect(compiled.textContent).toContain('25.00 PLN');
     expect(transactions).not.toHaveBeenCalled();
   });

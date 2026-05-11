@@ -47,7 +47,7 @@ export class LoginPageComponent {
           void this.navigateAfterLogin(response.user.role);
         },
         error: (error) => {
-          this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie zalogowac.'));
+          this.errorMessage.set(getErrorMessage(error, 'Nie udało się zalogować.'));
         },
       });
   }

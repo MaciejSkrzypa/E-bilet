@@ -2,10 +2,10 @@
   <div class="section-head section-head--with-filters">
     <div>
       <p class="eyebrow">Oferta</p>
-      <h2>Dostepne bilety</h2>
+      <h2>Dostępne bilety</h2>
     </div>
 
-    <div class="filter-row" aria-label="Filtrowanie rodzajow biletow">
+    <div class="filter-row" aria-label="Filtrowanie rodzajów biletów">
       @for (filter of ticketTypeFilters; track filter.type) {
         <button
           class="filter-chip"
@@ -32,11 +32,11 @@
   }
 
   @if (isLoading() && offers().length === 0 && offerTotalElements() === 0) {
-    <p class="message-banner">Ladowanie aktualnej oferty biletowej...</p>
+    <p class="message-banner">Ładowanie aktualnej oferty biletowej...</p>
   } @else if (!isLoading() && offerTotalElements() === 0 && hasOfferFilters()) {
-    <p class="message-banner">Brak biletow spelniajacych wybrane filtry.</p>
+    <p class="message-banner">Brak biletów spełniających wybrane filtry.</p>
   } @else if (!isLoading() && offers().length === 0) {
-    <p class="message-banner">Obecnie brak dostepnych biletow.</p>
+    <p class="message-banner">Obecnie brak dostępnych biletów.</p>
   } @else {
     <div class="paged-collection-shell">
       <div class="offer-grid offer-grid--paged" [attr.data-loading]="isLoading()" [attr.aria-busy]="isLoading()">
@@ -99,7 +99,7 @@
   <div class="section-head">
     <div>
       <p class="eyebrow">Zasady korzystania</p>
-      <h2>Jak dzialaja bilety</h2>
+      <h2>Jak działają bilety</h2>
     </div>
   </div>
 
@@ -107,19 +107,19 @@
     <article class="panel">
       <span class="tag">Jednorazowy</span>
       <h3>Bilet jednorazowy</h3>
-      <p class="lead compact">Obowiazuje tylko w pojezdzie, w ktorym zostal skasowany.</p>
+      <p class="lead compact">Obowiązuje tylko w pojeździe, w którym został skasowany.</p>
     </article>
 
     <article class="panel">
       <span class="tag">Czasowy</span>
       <h3>Bilet czasowy</h3>
-      <p class="lead compact">Po skasowaniu jest wazny przez czas wskazany w danej ofercie.</p>
+      <p class="lead compact">Po skasowaniu jest ważny przez czas wskazany w danej ofercie.</p>
     </article>
 
     <article class="panel">
       <span class="tag">Okresowy</span>
       <h3>Bilet okresowy</h3>
-      <p class="lead compact">Przy zakupie wybierasz date poczatkowa i koncowa jego waznosci.</p>
+      <p class="lead compact">Przy zakupie wybierasz datę początkową i końcową jego ważności.</p>
     </article>
   </div>
 </section>

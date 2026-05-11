@@ -8,7 +8,7 @@
       <strong>eBilet Miejski</strong>
     </a>
 
-    <nav class="topnav" aria-label="Glowna nawigacja">
+    <nav class="topnav" aria-label="Główna nawigacja">
       @for (item of navItems(); track item.href) {
         <a
           [class.active]="isNavItemActive(item)"
@@ -24,7 +24,7 @@
         @if (user.role === 'PASSENGER') {
           <div class="balance-chip">
             <strong>{{ user.balance | number: '1.2-2' }} PLN</strong>
-            <button class="top-up-button" type="button" (click)="openTopUpModal()" aria-label="Doladuj konto">+</button>
+            <button class="top-up-button" type="button" (click)="openTopUpModal()" aria-label="Doładuj konto">+</button>
           </div>
         }
 

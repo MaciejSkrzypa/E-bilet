@@ -17,8 +17,8 @@
 
       @default {
         <p class="eyebrow">Kontrola biletu</p>
-        <h1>Kontrola waznosci biletu</h1>
-        <p class="lead">Wprowadz kod biletu i numer pojazdu, aby natychmiast sprawdzic jego status.</p>
+        <h1>Kontrola ważności biletu</h1>
+        <p class="lead">Wprowadź kod biletu i numer pojazdu, aby natychmiast sprawdzić jego status.</p>
 
         <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
           <label class="field">
@@ -41,14 +41,14 @@
           }
 
           <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
-            {{ isSubmitting() ? 'Sprawdzanie...' : 'Sprawdz waznosc biletu' }}
+            {{ isSubmitting() ? 'Sprawdzanie...' : 'Sprawdź ważność biletu' }}
           </button>
         </form>
 
         @if (result(); as result) {
           <section class="result-card" [attr.data-valid]="result.valid">
             <div class="result-card__head">
-              <span class="tag">{{ result.valid ? 'WAZNY' : 'NIEWAZNY' }}</span>
+              <span class="tag">{{ result.valid ? 'WAŻNY' : 'NIEWAŻNY' }}</span>
               <strong>{{ inspectionReasonLabel(result.reason) }}</strong>
             </div>
 
@@ -85,13 +85,13 @@
                     }
                     @if (ticket.validFrom) {
                       <div>
-                        <dt>Wazny od</dt>
+                        <dt>Ważny od</dt>
                         <dd>{{ ticket.validFrom | date: 'dd.MM.yyyy' }}</dd>
                       </div>
                     }
                     @if (ticket.validTo) {
                       <div>
-                        <dt>Wazny do</dt>
+                        <dt>Ważny do</dt>
                         <dd>{{ ticket.validTo | date: 'dd.MM.yyyy' }}</dd>
                       </div>
                     }

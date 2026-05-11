@@ -90,7 +90,7 @@ describe('KasownikPageComponent', () => {
     fixture.detectChanges();
 
     expect(validate).toHaveBeenCalledWith({ code: baseTicket.code, vehicleId: 1 });
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Bilet zostal skasowany poprawnie');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Bilet został skasowany poprawnie');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('T-100');
   });
 
@@ -164,7 +164,7 @@ describe('KasownikPageComponent', () => {
 
     const component = fixture.componentInstance as any;
     expect(component.validationMode()).toBe('ticket');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Wybierz moj bilet');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Wybierz mój bilet');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('UUID biletu');
 
     component.form.patchValue({ vehicleQuery: 'A-12', vehicleId: 7 });

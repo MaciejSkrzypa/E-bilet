@@ -199,7 +199,7 @@ export class PassengerTicketsSectionComponent {
           this.loadTicketsPage(nextPage);
         },
         error: (error) => {
-          this.validationError.set(getErrorMessage(error, 'Kasowanie biletu nie powiodlo sie.'));
+          this.validationError.set(getErrorMessage(error, 'Kasowanie biletu nie powiodło się.'));
         },
       });
   }
@@ -220,7 +220,7 @@ export class PassengerTicketsSectionComponent {
           this.applyTicketsPage(ticketsPage);
         },
         error: (error) => {
-          this.ticketsError.set(getErrorMessage(error, 'Nie udalo sie zaladowac listy biletow.'));
+          this.ticketsError.set(getErrorMessage(error, 'Nie udało się załadować listy biletów.'));
         },
       });
   }

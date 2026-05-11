@@ -5,7 +5,7 @@ import { getErrorMessage } from './http-error.util';
 describe('getErrorMessage', () => {
   it('should return network message for status 0', () => {
     const error = new HttpErrorResponse({ status: 0 });
-    expect(getErrorMessage(error)).toBe('Nie udalo sie polaczyc z serwisem. Sprobuj ponownie za chwile.');
+    expect(getErrorMessage(error)).toBe('Nie udało się połączyć z serwisem. Spróbuj ponownie za chwilę.');
   });
 
   it('should prefer backend validation errors', () => {
@@ -16,7 +16,7 @@ describe('getErrorMessage', () => {
       },
     });
 
-    expect(getErrorMessage(error)).toBe('Data urodzenia: musi wskazywac date z przeszlosci.');
+    expect(getErrorMessage(error)).toBe('Data urodzenia: musi wskazywać datę z przeszłości.');
   });
 
   it('should format multiple validation messages from backend', () => {
@@ -28,7 +28,7 @@ describe('getErrorMessage', () => {
     });
 
     expect(getErrorMessage(error)).toBe(
-      '• Adres e-mail: musi byc poprawnym adresem e-mail.\n• Haslo: musi miec od 6 do 128 znakow.',
+      '• Adres e-mail: musi być poprawnym adresem e-mail.\n• Hasło: musi mieć od 6 do 128 znaków.',
     );
   });
 
@@ -52,10 +52,10 @@ describe('getErrorMessage', () => {
       },
     });
 
-    expect(getErrorMessage(messageError)).toBe('Nie masz uprawnien do tej sekcji.');
-    expect(getErrorMessage(rawError)).toBe('Nieprawidlowy adres e-mail lub haslo.');
+    expect(getErrorMessage(messageError)).toBe('Nie masz uprawnień do tej sekcji.');
+    expect(getErrorMessage(rawError)).toBe('Nieprawidłowy adres e-mail lub hasło.');
     expect(getErrorMessage(balanceError)).toBe(
-      'Brakuje srodkow na koncie. Wymagana kwota: 25.00 PLN. Dostepne srodki: 7.50 PLN.',
+      'Brakuje środków na koncie. Wymagana kwota: 25.00 PLN. Dostępne środki: 7.50 PLN.',
     );
   });
 
@@ -73,13 +73,13 @@ describe('getErrorMessage', () => {
       },
     });
 
-    expect(getErrorMessage(malformedError)).toBe('Przeslane dane maja nieprawidlowy format.');
-    expect(getErrorMessage(validatedTicketError)).toBe('Ten bilet zostal juz skasowany.');
+    expect(getErrorMessage(malformedError)).toBe('Przesłane dane mają nieprawidłowy format.');
+    expect(getErrorMessage(validatedTicketError)).toBe('Ten bilet został już skasowany.');
   });
 
   it('should build generic HTTP fallback', () => {
     const error = new HttpErrorResponse({ status: 500, error: {} });
-    expect(getErrorMessage(error)).toBe('Nie udalo sie wykonac operacji (kod 500).');
+    expect(getErrorMessage(error)).toBe('Nie udało się wykonać operacji (kod 500).');
   });
 
   it('should fall back to generic message for unknown error', () => {

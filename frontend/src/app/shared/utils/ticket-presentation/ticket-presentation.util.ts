@@ -26,17 +26,17 @@ export function getTicketTypeLabel(type: TicketType): string {
 export function getTicketStatus(ticket: TicketResponse, referenceDate = new Date()): TicketStatus {
   if (ticket.type === 'PERIOD') {
     if (!ticket.validFrom || !ticket.validTo) {
-      return { label: 'Niepelna konfiguracja biletu okresowego', tone: 'danger' };
+      return { label: 'Niepełna konfiguracja biletu okresowego', tone: 'danger' };
     }
 
     const referenceDateLabel = toDateInputValue(referenceDate);
 
     if (referenceDateLabel < ticket.validFrom) {
-      return { label: 'Oczekuje na rozpoczecie waznosci', tone: 'warning' };
+      return { label: 'Oczekuje na rozpoczęcie ważności', tone: 'warning' };
     }
 
     if (referenceDateLabel > ticket.validTo) {
-      return { label: 'Bilet okresowy wygasl', tone: 'danger' };
+      return { label: 'Bilet okresowy wygasł', tone: 'danger' };
     }
 
     return { label: 'Bilet okresowy jest aktywny', tone: 'success' };
@@ -51,21 +51,21 @@ export function getTicketStatus(ticket: TicketResponse, referenceDate = new Date
     const validationDateLabel = ticket.validatedAt.slice(0, 10);
 
     if (validationDateLabel !== referenceDateLabel) {
-      return { label: 'Bilet jednorazowy wygasl', tone: 'danger' };
+      return { label: 'Bilet jednorazowy wygasł', tone: 'danger' };
     }
 
-    return { label: 'Skasowany w pojezdzie', tone: 'success' };
+    return { label: 'Skasowany w pojeździe', tone: 'success' };
   }
 
   if (!ticket.durationMinutes) {
-    return { label: 'Brak czasu waznosci', tone: 'danger' };
+    return { label: 'Brak czasu ważności', tone: 'danger' };
   }
 
   const expiresAt = new Date(ticket.validatedAt);
   expiresAt.setMinutes(expiresAt.getMinutes() + ticket.durationMinutes);
 
   if (referenceDate > expiresAt) {
-    return { label: 'Bilet czasowy wygasl', tone: 'danger' };
+    return { label: 'Bilet czasowy wygasł', tone: 'danger' };
   }
 
   return { label: `Skasowany, aktywny do ${expiresAt.toLocaleString()}`, tone: 'success' };
@@ -105,7 +105,7 @@ export function getTicketTitle(ticket: TicketResponse): string {
 
 export function getOfferPriceCaption(offer: TicketOfferResponse): string | null {
   if (offer.type === 'PERIOD') {
-    return 'za dzien';
+    return 'za dzień';
   }
 
   return null;

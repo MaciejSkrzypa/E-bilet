@@ -11,4 +11,4 @@ export const TICKET_TYPE_FILTER_OPTIONS: readonly TicketTypeFilterOption[] = [
   { type: 'PERIOD', label: 'Okresowe' },
 ];
 
-export const TICKET_VALIDATION_SUCCESS_MESSAGE = 'Bilet zostal skasowany poprawnie.';
+export const TICKET_VALIDATION_SUCCESS_MESSAGE = 'Bilet został skasowany poprawnie.';

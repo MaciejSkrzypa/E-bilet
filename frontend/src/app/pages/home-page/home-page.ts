@@ -110,7 +110,7 @@ export class HomePageComponent {
           this.isLoading.set(false);
         },
         error: (error) => {
-          this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie pobrac oferty biletowej.'));
+          this.errorMessage.set(getErrorMessage(error, 'Nie udało się pobrać oferty biletowej.'));
           this.offers.set([]);
           this.offerTotalElements.set(0);
           this.offerTotalPages.set(0);
@@ -287,11 +287,11 @@ export class HomePageComponent {
             this.authStore.updateUser(user);
           }
 
-          this.purchaseMessage.set(`Zakup zakonczony. Kod biletu: ${ticket.code}`);
+          this.purchaseMessage.set(`Zakup zakończony. Kod biletu: ${ticket.code}`);
           this.closePurchaseModal();
         },
         error: (error) => {
-          this.purchaseError.set(getErrorMessage(error, 'Zakup biletu nie powiodl sie.'));
+          this.purchaseError.set(getErrorMessage(error, 'Zakup biletu nie powiódł się.'));
         },
       });
   }

@@ -14,11 +14,11 @@
       @if (shouldShowDropdown()) {
         <div class="vehicle-picker__dropdown" role="listbox" aria-label="Dopasowane pojazdy">
           @if (isLoading()) {
-            <p class="vehicle-picker__status">Wyszukiwanie pojazdow...</p>
+            <p class="vehicle-picker__status">Wyszukiwanie pojazdów...</p>
           } @else if (errorMessage(); as errorMessage) {
             <p class="vehicle-picker__status">{{ errorMessage }}</p>
           } @else if (shouldShowNoResults()) {
-            <p class="vehicle-picker__status">Brak pojazdow pasujacych do wpisanego identyfikatora.</p>
+            <p class="vehicle-picker__status">Brak pojazdów pasujących do wpisanego identyfikatora.</p>
           } @else if (shouldShowSuggestions()) {
             <div class="vehicle-picker__suggestions">
               @for (vehicle of suggestions(); track vehicle.id) {

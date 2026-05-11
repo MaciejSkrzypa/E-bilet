@@ -118,7 +118,7 @@ describe('HomePageComponent', () => {
     expect(compiled.textContent).toContain('Jednorazowy');
     expect(compiled.textContent).toContain('Czasowy');
     expect(compiled.textContent).toContain('Okresowy');
-    expect(compiled.textContent).toContain('za dzien');
+    expect(compiled.textContent).toContain('za dzień');
     expect(compiled.textContent).toContain('Kup teraz');
     expect(compiled.textContent).toContain('1-3 z 3 ofert');
   });

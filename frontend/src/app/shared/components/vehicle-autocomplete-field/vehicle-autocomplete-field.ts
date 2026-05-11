@@ -20,7 +20,7 @@ export type VehicleIdControl = FormControl<number | null>;
 })
 export class VehicleAutocompleteFieldComponent implements OnInit {
   readonly label = input('Identyfikator pojazdu');
-  readonly placeholder = input('Zacznij wpisywac, np. T-100');
+  readonly placeholder = input('Zacznij wpisywać, np. T-100');
   readonly centered = input(false);
   readonly queryControl = input.required<VehicleQueryControl>();
   readonly vehicleIdControl = input.required<VehicleIdControl>();
@@ -138,7 +138,7 @@ export class VehicleAutocompleteFieldComponent implements OnInit {
       .pipe(
         map((vehiclesPage) => ({ query, vehicles: vehiclesPage.content })),
         catchError((error) => {
-          this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie pobrac listy pojazdow.'));
+          this.errorMessage.set(getErrorMessage(error, 'Nie udało się pobrać listy pojazdów.'));
           return of({ query, vehicles: [] as VehicleResponse[] });
         }),
         finalize(() => this.isLoading.set(false)),

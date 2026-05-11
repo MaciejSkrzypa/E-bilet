@@ -1,4 +1,4 @@
-<nav class="panel subnav-bar" aria-label="Nawigacja panelu pasazera">
+<nav class="panel subnav-bar" aria-label="Nawigacja panelu pasażera">
   @for (section of sectionTabs; track section.href) {
     <a class="subnav-link" [routerLink]="section.href" routerLinkActive="subnav-link--active" [routerLinkActiveOptions]="{ exact: true }">
       {{ section.label }}

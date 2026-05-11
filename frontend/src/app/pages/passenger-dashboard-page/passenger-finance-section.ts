@@ -90,7 +90,7 @@ export class PassengerFinanceSectionComponent {
           this.applyTransactionsPage(transactionsPage);
         },
         error: (error) => {
-          this.transactionsError.set(getErrorMessage(error, 'Nie udalo sie zaladowac historii transakcji.'));
+          this.transactionsError.set(getErrorMessage(error, 'Nie udało się załadować historii transakcji.'));
         },
       });
   }

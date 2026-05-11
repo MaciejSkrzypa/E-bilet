@@ -12,7 +12,7 @@
     }
 
     @if (isTransactionsLoading() && !hasTransactionsSnapshot()) {
-      <p class="message-banner">Ladowanie transakcji...</p>
+      <p class="message-banner">Ładowanie transakcji...</p>
     } @else if (hasTransactionsSnapshot() && transactionTotalElements() === 0) {
       <p class="lead compact">Historia transakcji jest pusta.</p>
     } @else if (hasTransactionsSnapshot()) {
@@ -22,7 +22,7 @@
             <article class="ticket-row">
               <div class="ticket-row__head">
                 <div>
-                  <strong>{{ transaction.type === 'TOPUP' ? 'Doladowanie' : 'Zakup biletu' }}</strong>
+                  <strong>{{ transaction.type === 'TOPUP' ? 'Doładowanie' : 'Zakup biletu' }}</strong>
                   <small>{{ transaction.createdAt | date: 'dd.MM.yyyy, HH:mm' }}</small>
                 </div>
 
@@ -32,7 +32,7 @@
               </div>
 
               @if (transaction.ticketCode) {
-                <p class="lead compact">Powiazany bilet: {{ transaction.ticketCode }}</p>
+                <p class="lead compact">Powiązany bilet: {{ transaction.ticketCode }}</p>
               }
             </article>
           }

@@ -71,7 +71,7 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('20.00 PLN');
-    expect(compiled.textContent).toContain('Panel pasazera');
+    expect(compiled.textContent).toContain('Panel pasażera');
     expect(compiled.textContent).toContain('Wyloguj');
     expect(compiled.textContent).not.toContain('Stan konta');
     expect(compiled.textContent).not.toContain('anna@example.com');
@@ -121,7 +121,7 @@ describe('App', () => {
     await fixture.whenStable();
 
     const submitButton = (Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[]).find(
-      (button) => button.textContent?.includes('Doladuj kwote'),
+      (button) => button.textContent?.includes('Doładuj kwotę'),
     ) as HTMLButtonElement | undefined;
 
     expect(component.topUpForm.invalid).toBe(true);
@@ -143,7 +143,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Sprawdz waznosc biletu');
+    expect(compiled.textContent).toContain('Sprawdź ważność biletu');
     expect(compiled.textContent).toContain('O mnie');
     expect(compiled.textContent).not.toContain('Start');
     expect(compiled.textContent).not.toContain('Kasownik');
@@ -189,7 +189,7 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(component.topUpError()).toContain('Nie udalo sie doladowac konta.');
+    expect(component.topUpError()).toContain('Nie udało się doładować konta.');
     expect(component.isTopUpModalOpen()).toBe(true);
   });
 

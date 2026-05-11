@@ -7,40 +7,40 @@ const FIELD_LABELS: Record<string, string> = {
   code: 'Kod biletu',
   dateOfBirth: 'Data urodzenia',
   email: 'Adres e-mail',
-  firstName: 'Imie',
+  firstName: 'Imię',
   lastName: 'Nazwisko',
   offerId: 'Oferta biletu',
-  password: 'Haslo',
-  validFrom: 'Data poczatkowa',
-  validTo: 'Data koncowa',
+  password: 'Hasło',
+  validFrom: 'Data początkowa',
+  validTo: 'Data końcowa',
   vehicleId: 'Pojazd',
 };
 
 const EXACT_MESSAGE_MAP: Record<string, string> = {
-  'Access denied: insufficient role for this resource': 'Nie masz uprawnien do tej sekcji.',
-  'Amount must be positive': 'Kwota musi byc dodatnia.',
-  'Amount too large': 'Kwota jest zbyt duza.',
-  'Authentication required: missing or invalid Bearer token': 'Sesja wygasla lub jest nieprawidlowa. Zaloguj sie ponownie.',
-  'Constraint violation': 'Przeslane dane sa nieprawidlowe.',
-  'Email already registered': 'Konto z tym adresem e-mail juz istnieje.',
+  'Access denied: insufficient role for this resource': 'Nie masz uprawnień do tej sekcji.',
+  'Amount must be positive': 'Kwota musi być dodatnia.',
+  'Amount too large': 'Kwota jest zbyt duża.',
+  'Authentication required: missing or invalid Bearer token': 'Sesja wygasła lub jest nieprawidłowa. Zaloguj się ponownie.',
+  'Constraint violation': 'Przesłane dane są nieprawidłowe.',
+  'Email already registered': 'Konto z tym adresem e-mail już istnieje.',
   'Inspection vehicle not found': 'Nie znaleziono pojazdu do kontroli.',
-  'Invalid credentials': 'Nieprawidlowy adres e-mail lub haslo.',
+  'Invalid credentials': 'Nieprawidłowy adres e-mail lub hasło.',
   'Offer not found': 'Nie znaleziono oferty biletu.',
-  'PERIOD tickets do not require validation (no kasowanie)': 'Bilety okresowe nie wymagaja kasowania.',
-  'Request validation failed': 'Sprawdz poprawnosc formularza.',
+  'PERIOD tickets do not require validation (no kasowanie)': 'Bilety okresowe nie wymagają kasowania.',
+  'Request validation failed': 'Sprawdź poprawność formularza.',
   'Ticket not found': 'Nie znaleziono biletu.',
-  'Ticket time fields must match its type': 'Dane waznosci biletu nie zgadzaja sie z jego typem.',
-  'User not found': 'Nie znaleziono uzytkownika.',
+  'Ticket time fields must match its type': 'Dane ważności biletu nie zgadzają się z jego typem.',
+  'User not found': 'Nie znaleziono użytkownika.',
   'Vehicle not found': 'Nie znaleziono pojazdu.',
-  'validFrom and validTo are required for PERIOD tickets': 'Dla biletu okresowego wybierz date poczatkowa i koncowa.',
-  'validFrom cannot be in the past': 'Data poczatkowa nie moze byc z przeszlosci.',
-  'validFrom must be on or before validTo': 'Data poczatkowa nie moze byc pozniejsza niz data koncowa.',
+  'validFrom and validTo are required for PERIOD tickets': 'Dla biletu okresowego wybierz datę początkową i końcową.',
+  'validFrom cannot be in the past': 'Data początkowa nie może być z przeszłości.',
+  'validFrom must be on or before validTo': 'Data początkowa nie może być późniejsza niż data końcowa.',
 };
 
-export function getErrorMessage(error: unknown, fallback = 'Wystapil nieoczekiwany blad.'): string {
+export function getErrorMessage(error: unknown, fallback = 'Wystąpił nieoczekiwany błąd.'): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
-      return 'Nie udalo sie polaczyc z serwisem. Sprobuj ponownie za chwile.';
+      return 'Nie udało się połączyć z serwisem. Spróbuj ponownie za chwilę.';
     }
 
     if (typeof error.error === 'string' && error.error.trim().length > 0) {
@@ -114,7 +114,7 @@ function normalizeConstraintMessage(message: string): string {
   const trimmedMessage = message.trim();
 
   if (trimmedMessage === 'must be a past date') {
-    return 'musi wskazywac date z przeszlosci.';
+    return 'musi wskazywać datę z przeszłości.';
   }
 
   if (trimmedMessage === 'must not be blank' || trimmedMessage === 'must not be null') {
@@ -122,15 +122,15 @@ function normalizeConstraintMessage(message: string): string {
   }
 
   if (trimmedMessage === 'must be a well-formed email address' || trimmedMessage === 'must be well-formed email address') {
-    return 'musi byc poprawnym adresem e-mail.';
+    return 'musi być poprawnym adresem e-mail.';
   }
 
   if (trimmedMessage === 'Amount must be positive') {
-    return 'musi byc dodatnia.';
+    return 'musi być dodatnia.';
   }
 
   if (trimmedMessage === 'Amount too large') {
-    return 'jest zbyt duza.';
+    return 'jest zbyt duża.';
   }
 
   const sizeMatch = trimmedMessage.match(/^size must be between (\d+) and (\d+)$/);
@@ -139,20 +139,20 @@ function normalizeConstraintMessage(message: string): string {
     const maximum = Number(sizeMatch[2]);
 
     if (minimum === 0) {
-      return `moze miec maksymalnie ${maximum} znakow.`;
+      return `może mieć maksymalnie ${maximum} znaków.`;
     }
 
-    return `musi miec od ${minimum} do ${maximum} znakow.`;
+    return `musi mieć od ${minimum} do ${maximum} znaków.`;
   }
 
   const minMatch = trimmedMessage.match(/^must be greater than or equal to ([0-9.]+)$/);
   if (minMatch) {
-    return `musi byc wieksze lub rowne ${minMatch[1]}.`;
+    return `musi być większe lub równe ${minMatch[1]}.`;
   }
 
   const maxMatch = trimmedMessage.match(/^must be less than or equal to ([0-9.]+)$/);
   if (maxMatch) {
-    return `musi byc mniejsze lub rowne ${maxMatch[1]}.`;
+    return `musi być mniejsze lub równe ${maxMatch[1]}.`;
   }
 
   return normalizeBackendMessage(trimmedMessage, false);
@@ -162,7 +162,7 @@ function normalizeBackendMessage(message: string, ensureSentence = true): string
   const trimmedMessage = message.trim();
 
   if (trimmedMessage.length === 0) {
-    return 'Wystapil nieoczekiwany blad.';
+    return 'Wystąpił nieoczekiwany błąd.';
   }
 
   const exactMatch = EXACT_MESSAGE_MAP[trimmedMessage];
@@ -173,22 +173,22 @@ function normalizeBackendMessage(message: string, ensureSentence = true): string
   if (trimmedMessage.startsWith('Insufficient balance: required ')) {
     const match = trimmedMessage.match(/required\s+([0-9.]+),\s+available\s+([0-9.]+)/);
     if (match) {
-      return `Brakuje srodkow na koncie. Wymagana kwota: ${match[1]} PLN. Dostepne srodki: ${match[2]} PLN.`;
+      return `Brakuje środków na koncie. Wymagana kwota: ${match[1]} PLN. Dostępne środki: ${match[2]} PLN.`;
     }
 
-    return 'Brakuje srodkow na koncie.';
+    return 'Brakuje środków na koncie.';
   }
 
   if (trimmedMessage.startsWith('Ticket already validated at ')) {
-    return 'Ten bilet zostal juz skasowany.';
+    return 'Ten bilet został już skasowany.';
   }
 
   if (trimmedMessage.startsWith('validFrom/validTo are not allowed for ')) {
-    return 'Dla tego rodzaju biletu nie podaje sie zakresu dat.';
+    return 'Dla tego rodzaju biletu nie podaje się zakresu dat.';
   }
 
   if (trimmedMessage.startsWith('Malformed request body:')) {
-    return 'Przeslane dane maja nieprawidlowy format.';
+    return 'Przesłane dane mają nieprawidłowy format.';
   }
 
   if (!ensureSentence) {
@@ -201,19 +201,19 @@ function normalizeBackendMessage(message: string, ensureSentence = true): string
 function getStatusFallback(status: number): string {
   switch (status) {
     case 400:
-      return 'Przeslane dane sa nieprawidlowe.';
+      return 'Przesłane dane są nieprawidłowe.';
     case 401:
-      return 'Sesja wygasla lub wymagane jest zalogowanie.';
+      return 'Sesja wygasła lub wymagane jest zalogowanie.';
     case 402:
-      return 'Operacja nie moze zostac wykonana z powodu niewystarczajacych srodkow.';
+      return 'Operacja nie może zostać wykonana z powodu niewystarczających środków.';
     case 403:
-      return 'Nie masz uprawnien do wykonania tej operacji.';
+      return 'Nie masz uprawnień do wykonania tej operacji.';
     case 404:
       return 'Nie znaleziono szukanego zasobu.';
     case 409:
       return 'Operacja jest sprzeczna z aktualnym stanem danych.';
     default:
-      return `Nie udalo sie wykonac operacji (kod ${status}).`;
+      return `Nie udało się wykonać operacji (kod ${status}).`;
   }
 }
 

@@ -94,9 +94,9 @@ describe('InspectorDashboardPageComponent', () => {
     (component as any).submit();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('WAZNY');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('WAŻNY');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('T-100');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Bilet jednorazowy jest wazny w tym pojezdzie.');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Bilet jednorazowy jest ważny w tym pojeździe.');
   });
 
   it('should render inspector profile section', async () => {
