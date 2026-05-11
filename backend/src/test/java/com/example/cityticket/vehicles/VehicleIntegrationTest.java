@@ -14,7 +14,7 @@ class VehicleIntegrationTest extends AbstractIntegrationTest {
 	void listingIsPubliclyAccessibleAndPaginated() throws Exception {
 		mockMvc.perform(get("/api/vehicles?size=2&page=0&sort=label,asc"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalElements").value(6))
+				.andExpect(jsonPath("$.totalElements").value(12))
 				.andExpect(jsonPath("$.content.length()").value(2))
 				.andExpect(jsonPath("$.content[0].label").value("B-200"))
 				.andExpect(jsonPath("$.content[1].label").value("B-201"))
@@ -26,9 +26,9 @@ class VehicleIntegrationTest extends AbstractIntegrationTest {
 	void queryFiltersVehiclesByLabel() throws Exception {
 		mockMvc.perform(get("/api/vehicles?query=T-10&size=10&sort=label,asc"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalElements").value(3))
-				.andExpect(jsonPath("$.content.length()").value(3))
+				.andExpect(jsonPath("$.totalElements").value(6))
+				.andExpect(jsonPath("$.content.length()").value(6))
 				.andExpect(jsonPath("$.content[0].label").value("T-100"))
-				.andExpect(jsonPath("$.content[2].label").value("T-102"));
+				.andExpect(jsonPath("$.content[5].label").value("T-105"));
 	}
 }
