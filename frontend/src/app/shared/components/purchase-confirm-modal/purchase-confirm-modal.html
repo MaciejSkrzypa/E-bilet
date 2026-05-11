@@ -12,27 +12,27 @@
     <form class="form-grid" [formGroup]="form()" (ngSubmit)="submit()">
       @if (offer().type === 'PERIOD') {
         <label class="field">
-          <span>Data poczatkowa</span>
+          <span>Data początkowa</span>
           <input type="date" [min]="minimumPeriodStart()" formControlName="validFrom" />
           @if (form().controls.validFrom.invalid && form().controls.validFrom.touched) {
-            <small>Wybierz date poczatkowa.</small>
+            <small>Wybierz datę początkową.</small>
           }
         </label>
 
         <label class="field">
-          <span>Data koncowa</span>
+          <span>Data końcowa</span>
           <input type="date" [min]="minimumPeriodStart()" formControlName="validTo" />
           @if (form().controls.validTo.invalid && form().controls.validTo.touched) {
-            <small>Wybierz date koncowa.</small>
+            <small>Wybierz datę końcową.</small>
           }
         </label>
 
         @if (form().errors?.['invalidRange']) {
-          <small class="inline-error">Data koncowa nie moze byc wczesniejsza od poczatkowej.</small>
+          <small class="inline-error">Data końcowa nie może być wcześniejsza od początkowej.</small>
         }
 
         @if (form().errors?.['startInPast']) {
-          <small class="inline-error">Poczatek okresu nie moze byc w przeszlosci.</small>
+          <small class="inline-error">Początek okresu nie może być w przeszłości.</small>
         }
       }
 
@@ -71,7 +71,7 @@
 
       <div class="modal-actions">
         <button class="primary-action modal-submit-button" type="submit" [disabled]="isSubmitting() || !canConfirm()">
-          {{ isSubmitting() ? 'Zakup w toku...' : 'Potwierdz zakup' }}
+          {{ isSubmitting() ? 'Zakup w toku...' : 'Potwierdź zakup' }}
         </button>
       </div>
     </form>

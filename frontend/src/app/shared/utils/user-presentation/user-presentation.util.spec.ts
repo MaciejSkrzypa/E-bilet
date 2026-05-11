@@ -14,7 +14,7 @@ describe('user presentation util', () => {
       }),
     ).toEqual([
       { label: 'Adres e-mail', value: 'anna@example.com' },
-      { label: 'Imie', value: 'Anna' },
+      { label: 'Imię', value: 'Anna' },
       { label: 'Nazwisko', value: 'Nowak' },
       { label: 'Data urodzenia', value: '12.04.1995' },
     ]);

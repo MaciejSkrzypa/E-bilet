@@ -39,7 +39,7 @@ describe('PurchaseConfirmModalComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.modal-close-x')).not.toBeNull();
-    expect(compiled.textContent).toContain('Potwierdz zakup');
+    expect(compiled.textContent).toContain('Potwierdź zakup');
     expect(compiled.textContent).not.toContain('Anuluj');
     expect(compiled.textContent).not.toContain('Zamknij');
   });

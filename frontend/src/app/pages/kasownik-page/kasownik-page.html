@@ -1,14 +1,14 @@
 <section class="centered-page">
   <article class="panel wide-panel">
     <p class="eyebrow">Kasowanie biletu</p>
-    <h1>Aktywuj bilet przed rozpoczeciem przejazdu</h1>
+    <h1>Aktywuj bilet przed rozpoczęciem przejazdu</h1>
     <p class="lead">
-      Wpisz kod biletu albo wybierz jeden ze swoich biletow wymagajacych kasowania i podaj numer pojazdu.
+      Wpisz kod biletu albo wybierz jeden ze swoich biletów wymagających kasowania i podaj numer pojazdu.
     </p>
 
     <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
       @if (canUseOwnedTicketPicker()) {
-        <div class="validation-mode-row" aria-label="Wybor sposobu kasowania biletu">
+        <div class="validation-mode-row" aria-label="Wybór sposobu kasowania biletu">
           <button
             class="secondary-action mode-button"
             type="button"
@@ -16,7 +16,7 @@
             [disabled]="availableTickets().length === 0"
             (click)="setValidationMode('ticket')"
           >
-            Wybierz moj bilet
+            Wybierz mój bilet
           </button>
           <button
             class="secondary-action mode-button"
@@ -38,9 +38,9 @@
           <span>Wybierz bilet do skasowania</span>
 
           @if (isLoadingOwnedTickets()) {
-            <p class="subtle-copy">Ladowanie biletow gotowych do skasowania...</p>
+            <p class="subtle-copy">Ładowanie biletów gotowych do skasowania...</p>
           } @else if (availableTickets().length === 0) {
-            <p class="message-banner">Nie masz obecnie biletow wymagajacych kasowania.</p>
+            <p class="message-banner">Nie masz obecnie biletów wymagających kasowania.</p>
           } @else {
             <div class="ticket-picker">
               <select class="ticket-picker__select" formControlName="selectedTicketCode">

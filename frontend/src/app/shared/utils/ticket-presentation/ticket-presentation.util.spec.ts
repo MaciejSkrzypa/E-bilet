@@ -75,11 +75,11 @@ describe('ticket presentation util', () => {
     };
 
     expect(getTicketStatus(singleTicket, new Date('2026-05-09T12:00:00'))).toEqual({
-      label: 'Skasowany w pojezdzie',
+      label: 'Skasowany w pojeździe',
       tone: 'success',
     });
     expect(getTicketStatus(singleTicket, new Date('2026-05-10T08:00:00'))).toEqual({
-      label: 'Bilet jednorazowy wygasl',
+      label: 'Bilet jednorazowy wygasł',
       tone: 'danger',
     });
 
@@ -109,7 +109,7 @@ describe('ticket presentation util', () => {
         type: 'PERIOD',
       }),
     ).toEqual({
-      label: 'Niepelna konfiguracja biletu okresowego',
+      label: 'Niepełna konfiguracja biletu okresowego',
       tone: 'danger',
     });
 
@@ -121,7 +121,7 @@ describe('ticket presentation util', () => {
         durationMinutes: null,
       }),
     ).toEqual({
-      label: 'Brak czasu waznosci',
+      label: 'Brak czasu ważności',
       tone: 'danger',
     });
   });
@@ -240,7 +240,7 @@ describe('ticket presentation util', () => {
         price: 5,
         durationMinutes: null,
       }),
-    ).toBe('za dzien');
+    ).toBe('za dzień');
 
     expect(
       getOfferPriceCaption({

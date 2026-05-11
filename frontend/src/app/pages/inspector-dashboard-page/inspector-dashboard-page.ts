@@ -93,7 +93,7 @@ export class InspectorDashboardPageComponent {
         },
         error: (error) => {
           this.result.set(null);
-          this.errorMessage.set(getErrorMessage(error, 'Kontrola biletu nie powiodla sie.'));
+          this.errorMessage.set(getErrorMessage(error, 'Kontrola biletu nie powiodła się.'));
         },
       });
   }

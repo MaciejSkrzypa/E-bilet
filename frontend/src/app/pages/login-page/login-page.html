@@ -1,8 +1,8 @@
 <section class="centered-page">
   <article class="panel auth-card">
     <p class="eyebrow">Witaj ponownie</p>
-    <h1>Zaloguj sie do swojego konta</h1>
-    <p class="lead compact">Sprawdz swoje bilety, saldo i ostatnia aktywnosc w jednym miejscu.</p>
+    <h1>Zaloguj się do swojego konta</h1>
+    <p class="lead compact">Sprawdź swoje bilety, saldo i ostatnią aktywność w jednym miejscu.</p>
 
     <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
       <label class="field">
@@ -14,10 +14,10 @@
       </label>
 
       <label class="field">
-        <span>Haslo</span>
-        <input type="password" formControlName="password" placeholder="Wpisz haslo" />
+        <span>Hasło</span>
+        <input type="password" formControlName="password" placeholder="Wpisz hasło" />
         @if (form.controls.password.invalid && form.controls.password.touched) {
-          <small>Haslo jest wymagane.</small>
+          <small>Hasło jest wymagane.</small>
         }
       </label>
 
@@ -26,13 +26,13 @@
       }
 
       <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Logowanie...' : 'Zaloguj sie' }}
+        {{ isSubmitting() ? 'Logowanie...' : 'Zaloguj się' }}
       </button>
     </form>
 
     <p class="subtle-copy">
       Nie masz jeszcze konta?
-      <a routerLink="/register">Przejdz do rejestracji</a>
+      <a routerLink="/register">Przejdź do rejestracji</a>
     </p>
   </article>
 </section>

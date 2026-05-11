@@ -316,7 +316,7 @@ describe('PassengerTicketsSectionComponent', () => {
       code: ticket.code,
       vehicleId: 12,
     });
-    expect(component.validationSuccess()).toContain('Bilet zostal skasowany poprawnie.');
+    expect(component.validationSuccess()).toContain('Bilet został skasowany poprawnie.');
     expect(list).toHaveBeenCalledTimes(1);
   });
 });

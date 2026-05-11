@@ -48,7 +48,7 @@ export class App {
 
     if (user.role === 'INSPECTOR') {
       return [
-        { label: 'Sprawdz waznosc biletu', href: '/inspector', exact: true },
+        { label: 'Sprawdź ważność biletu', href: '/inspector', exact: true },
         { label: 'O mnie', href: '/inspector/profile', exact: true },
       ];
     }
@@ -57,7 +57,7 @@ export class App {
       { label: 'Start', href: '/', exact: true },
       { label: 'Kasownik', href: '/kasownik' },
       {
-        label: 'Panel pasazera',
+        label: 'Panel pasażera',
         href: '/passenger',
       },
     ];
@@ -144,7 +144,7 @@ export class App {
           this.closeTopUpModal();
         },
         error: () => {
-          this.topUpError.set('Nie udalo sie doladowac konta.');
+          this.topUpError.set('Nie udało się doładować konta.');
         },
       });
   }

@@ -13,7 +13,7 @@ export function buildUserProfileFields(user: UserResponse | null | undefined): P
 
   return [
     { label: 'Adres e-mail', value: user.email },
-    { label: 'Imie', value: user.firstName },
+    { label: 'Imię', value: user.firstName },
     { label: 'Nazwisko', value: user.lastName },
     { label: 'Data urodzenia', value: formatDateLabel(user.dateOfBirth) },
   ];

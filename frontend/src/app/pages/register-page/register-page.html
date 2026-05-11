@@ -1,9 +1,9 @@
 <section class="centered-page">
   <article class="panel auth-card">
     <p class="eyebrow">Nowe konto</p>
-    <h1>Zaloz konto i kupuj bilety online</h1>
+    <h1>Załóż konto i kupuj bilety online</h1>
     <p class="lead compact">
-      Rejestracja zajmie chwile. Po zalogowaniu od razu zobaczysz oferte i swoje konto.
+      Rejestracja zajmie chwilę. Po zalogowaniu od razu zobaczysz ofertę i swoje konto.
     </p>
 
     <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
@@ -16,10 +16,10 @@
       </label>
 
       <label class="field">
-        <span>Imie</span>
+        <span>Imię</span>
         <input type="text" formControlName="firstName" placeholder="np. Anna" />
         @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
-          <small>Imie jest wymagane i nie moze przekraczac 64 znakow.</small>
+          <small>Imię jest wymagane i nie może przekraczać 64 znaków.</small>
         }
       </label>
 
@@ -27,7 +27,7 @@
         <span>Nazwisko</span>
         <input type="text" formControlName="lastName" placeholder="np. Nowak" />
         @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
-          <small>Nazwisko jest wymagane i nie moze przekraczac 64 znakow.</small>
+          <small>Nazwisko jest wymagane i nie może przekraczać 64 znaków.</small>
         }
       </label>
 
@@ -35,23 +35,23 @@
         <span>Data urodzenia</span>
         <input type="date" [max]="maximumDateOfBirth" formControlName="dateOfBirth" />
         @if (form.controls.dateOfBirth.touched && form.controls.dateOfBirth.invalid) {
-          <small>Wybierz poprawna date urodzenia.</small>
+          <small>Wybierz poprawną datę urodzenia.</small>
         }
       </label>
 
       <label class="field">
-        <span>Haslo</span>
-        <input type="password" formControlName="password" placeholder="minimum 6 znakow" />
+        <span>Hasło</span>
+        <input type="password" formControlName="password" placeholder="minimum 6 znaków" />
         @if (form.controls.password.touched && form.controls.password.invalid) {
-          <small>Haslo musi miec od 6 do 128 znakow.</small>
+          <small>Hasło musi mieć od 6 do 128 znaków.</small>
         }
       </label>
 
       <label class="field">
-        <span>Powtorz haslo</span>
-        <input type="password" formControlName="confirmPassword" placeholder="Powtorz haslo" />
+        <span>Powtórz hasło</span>
+        <input type="password" formControlName="confirmPassword" placeholder="Powtórz hasło" />
         @if (form.hasError('fieldsMismatch') && form.controls.confirmPassword.touched) {
-          <small>Hasla musza byc identyczne.</small>
+          <small>Hasła muszą być identyczne.</small>
         }
       </label>
 
@@ -60,13 +60,13 @@
       }
 
       <button class="primary-action wide-button" type="submit" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Tworzenie konta...' : 'Utworz konto i zaloguj' }}
+        {{ isSubmitting() ? 'Tworzenie konta...' : 'Utwórz konto i zaloguj' }}
       </button>
     </form>
 
     <p class="subtle-copy">
-      Masz juz konto?
-      <a routerLink="/login">Przejdz do logowania</a>
+      Masz już konto?
+      <a routerLink="/login">Przejdź do logowania</a>
     </p>
   </article>
 </section>

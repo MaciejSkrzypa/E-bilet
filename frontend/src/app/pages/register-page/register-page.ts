@@ -66,7 +66,7 @@ export class RegisterPageComponent {
           });
         },
         error: (error) => {
-          this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie utworzyc konta.'));
+          this.errorMessage.set(getErrorMessage(error, 'Nie udało się utworzyć konta.'));
         },
       });
   }

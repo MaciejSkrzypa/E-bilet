@@ -1,9 +1,9 @@
 const INSPECTION_REASON_MAP: Record<string, string> = {
-  'Inspection date outside [validFrom, validTo]': 'Data kontroli jest poza okresem waznosci biletu okresowego.',
-  'Period ticket within validity range': 'Bilet okresowy jest wazny w dniu kontroli.',
-  'Single ticket expired: validation day has passed': 'Bilet jednorazowy jest wazny tylko w dniu skasowania.',
-  'Single ticket valid in this vehicle': 'Bilet jednorazowy jest wazny w tym pojezdzie.',
-  'Ticket has not been validated (kasowanie missing)': 'Bilet nie zostal skasowany.',
+  'Inspection date outside [validFrom, validTo]': 'Data kontroli jest poza okresem ważności biletu okresowego.',
+  'Period ticket within validity range': 'Bilet okresowy jest ważny w dniu kontroli.',
+  'Single ticket expired: validation day has passed': 'Bilet jednorazowy jest ważny tylko w dniu skasowania.',
+  'Single ticket valid in this vehicle': 'Bilet jednorazowy jest ważny w tym pojeździe.',
+  'Ticket has not been validated (kasowanie missing)': 'Bilet nie został skasowany.',
   'Ticket not found': 'Nie znaleziono biletu.',
   'Unknown ticket type': 'Nieznany typ biletu.',
 };
@@ -27,16 +27,16 @@ export function getInspectionReasonLabel(reason: string): string {
     );
 
     return label.length > 0
-      ? `Bilet jednorazowy zostal skasowany w innym pojezdzie (${label}).`
-      : 'Bilet jednorazowy zostal skasowany w innym pojezdzie.';
+      ? `Bilet jednorazowy został skasowany w innym pojeździe (${label}).`
+      : 'Bilet jednorazowy został skasowany w innym pojeździe.';
   }
 
   if (trimmedReason.startsWith('Time ticket expired at ')) {
-    return `Bilet czasowy wygasl o ${formatLocalDateTimeLabel(trimmedReason.slice('Time ticket expired at '.length))}.`;
+    return `Bilet czasowy wygasł o ${formatLocalDateTimeLabel(trimmedReason.slice('Time ticket expired at '.length))}.`;
   }
 
   if (trimmedReason.startsWith('Time ticket valid until ')) {
-    return `Bilet czasowy jest wazny do ${formatLocalDateTimeLabel(trimmedReason.slice('Time ticket valid until '.length))}.`;
+    return `Bilet czasowy jest ważny do ${formatLocalDateTimeLabel(trimmedReason.slice('Time ticket valid until '.length))}.`;
   }
 
   return appendPeriodIfNeeded(trimmedReason);

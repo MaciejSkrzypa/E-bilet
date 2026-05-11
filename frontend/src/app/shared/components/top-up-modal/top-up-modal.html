@@ -4,8 +4,8 @@
 
     <div class="top-up-modal__head">
       <div>
-        <p class="eyebrow">Doladowanie konta</p>
-        <h2>Wybierz kwote doladowania</h2>
+        <p class="eyebrow">Doładowanie konta</p>
+        <h2>Wybierz kwotę doładowania</h2>
       </div>
     </div>
 
@@ -24,10 +24,10 @@
       </div>
 
       <label class="field">
-        <span>Wlasna kwota</span>
+        <span>Własna kwota</span>
         <input type="number" step="0.01" min="0" formControlName="amount" placeholder="np. 25" />
         @if (form().controls.amount.invalid && form().controls.amount.touched) {
-          <small>Kwota musi byc wieksza od 0.00 PLN.</small>
+          <small>Kwota musi być większa od 0.00 PLN.</small>
         }
       </label>
 
@@ -37,7 +37,7 @@
 
       <div class="modal-actions">
         <button class="primary-action action-button" type="submit" [disabled]="form().invalid || isSubmitting()">
-          {{ isSubmitting() ? 'Doladowanie...' : 'Doladuj kwote' }}
+          {{ isSubmitting() ? 'Doładowanie...' : 'Doładuj kwotę' }}
         </button>
       </div>
     </form>
