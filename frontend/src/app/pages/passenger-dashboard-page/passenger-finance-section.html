@@ -1,0 +1,68 @@
+<section class="section-spacing">
+  <article class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Historia finansowa</p>
+        <h2>Transakcje konta</h2>
+      </div>
+    </div>
+
+    @if (transactionsError(); as transactionsError) {
+      <p class="message-banner error">{{ transactionsError }}</p>
+    }
+
+    @if (isTransactionsLoading() && !hasTransactionsSnapshot()) {
+      <p class="message-banner">Ladowanie transakcji...</p>
+    } @else if (hasTransactionsSnapshot() && transactionTotalElements() === 0) {
+      <p class="lead compact">Historia transakcji jest pusta.</p>
+    } @else if (hasTransactionsSnapshot()) {
+      <div class="paged-collection-shell">
+        <div class="stack-list stack-list--transactions" [attr.data-loading]="isTransactionsLoading()" [attr.aria-busy]="isTransactionsLoading()">
+          @for (transaction of transactions(); track transaction.id) {
+            <article class="ticket-row">
+              <div class="ticket-row__head">
+                <div>
+                  <strong>{{ transaction.type === 'TOPUP' ? 'Doladowanie' : 'Zakup biletu' }}</strong>
+                  <small>{{ transaction.createdAt | date: 'dd.MM.yyyy, HH:mm' }}</small>
+                </div>
+
+                <span class="tag transaction-amount" [attr.data-type]="transaction.type">
+                  {{ transaction.amount | number: '1.2-2' }} PLN
+                </span>
+              </div>
+
+              @if (transaction.ticketCode) {
+                <p class="lead compact">Powiazany bilet: {{ transaction.ticketCode }}</p>
+              }
+            </article>
+          }
+
+          @for (placeholder of emptyTransactionSlots(); track placeholder) {
+            <article class="ticket-row ticket-row--placeholder ticket-row--transaction-placeholder" aria-hidden="true"></article>
+          }
+        </div>
+
+        @if (isTransactionsLoading() && transactions().length > 0) {
+          <div class="collection-loading-overlay" aria-hidden="true">
+            <span class="collection-loading-spinner"></span>
+          </div>
+        }
+      </div>
+
+      <app-pagination-controls
+        [page]="transactionPage()"
+        [size]="transactionPageSize()"
+        [totalElements]="transactionTotalElements()"
+        [totalPages]="transactionTotalPages()"
+        [first]="transactionFirstPage()"
+        [last]="transactionLastPage()"
+        [isLoading]="isTransactionsLoading()"
+        density="compact"
+        [sizeOptions]="transactionPageSizeOptions"
+        itemLabel="transakcji"
+        (pageChanged)="changeTransactionPage($event)"
+        (sizeChanged)="changeTransactionPageSize($event)"
+      />
+    }
+  </article>
+</section>

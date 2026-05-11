@@ -282,10 +282,18 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
 		LocalDate today = LocalDate.now();
 
-		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
+		var singlePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"offerId\":" + single + "}"))
-				.andExpect(status().isCreated());
+				.andExpect(status().isCreated())
+				.andReturn();
+
+		String singleCode = objectMapper.readTree(singlePurchase.getResponse().getContentAsString()).get("code").asText();
+
+		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + singleCode + "\",\"vehicleId\":1}"))
+				.andExpect(status().isOk());
 
 		var timePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -312,7 +320,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 
 		mockMvc.perform(get("/api/tickets?active=true").header("Authorization", bearer(token)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.totalElements").value(2))
+				.andExpect(jsonPath("$.totalElements").value(3))
 				.andExpect(jsonPath("$.content[0].type").exists())
 				.andExpect(jsonPath("$.content[*].type").isArray());
 	}

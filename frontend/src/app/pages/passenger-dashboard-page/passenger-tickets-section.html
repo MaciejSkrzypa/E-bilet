@@ -1,0 +1,159 @@
+<section class="section-spacing">
+  <article class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Moje bilety</p>
+      </div>
+    </div>
+
+    <div class="tickets-toolbar">
+      <div class="filter-row" aria-label="Filtrowanie typow biletow">
+        @for (filter of ticketTypeFilters; track filter.type) {
+          <button
+            class="filter-chip"
+            type="button"
+            [attr.data-active]="isTicketTypeSelected(filter.type)"
+            [disabled]="isTicketsLoading()"
+            (click)="toggleTicketTypeFilter(filter.type)"
+          >
+            {{ filter.label }}
+          </button>
+        }
+      </div>
+
+      <div class="filter-row" aria-label="Filtrowanie po statusie biletu">
+        @for (filter of ticketStateFilters; track filter.status) {
+          <button
+            class="filter-chip"
+            type="button"
+            [attr.data-active]="isTicketStatusSelected(filter.status)"
+            [disabled]="isTicketsLoading()"
+            (click)="toggleTicketStatusFilter(filter.status)"
+          >
+            {{ filter.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (validationSuccess(); as validationSuccess) {
+      <p class="message-banner success">{{ validationSuccess }}</p>
+    }
+
+    @if (ticketsError(); as ticketsError) {
+      <p class="message-banner error">{{ ticketsError }}</p>
+    }
+
+    @if (isTicketsLoading() && !hasTicketsSnapshot()) {
+      <p class="message-banner">Ladowanie biletow...</p>
+    } @else if (hasTicketsSnapshot() && ticketTotalElements() === 0) {
+      <p class="lead compact">
+        {{ hasTicketFilters() ? 'Brak biletow spelniajacych wybrane filtry.' : 'Nie masz jeszcze zadnych biletow.' }}
+      </p>
+    } @else if (hasTicketsSnapshot()) {
+      <div class="paged-collection-shell">
+        <div class="stack-list stack-list--tickets" [attr.data-loading]="isTicketsLoading()" [attr.aria-busy]="isTicketsLoading()">
+          @for (ticket of tickets(); track ticket.id) {
+            <article class="ticket-row">
+              <div class="ticket-row__head">
+                <div>
+                  <strong>{{ ticketTitle(ticket) }}</strong>
+                  <small>{{ ticket.code }}</small>
+                </div>
+
+                <div class="ticket-row__aside">
+                  <span class="status-pill" [attr.data-tone]="ticketStatus(ticket).tone">
+                    {{ ticketStatus(ticket).label }}
+                  </span>
+
+                  @if (canValidateTicket(ticket)) {
+                    <button
+                      class="secondary-action ticket-action-button"
+                      type="button"
+                      (click)="openValidationModal(ticket)"
+                    >
+                      Skasuj
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <dl class="detail-list">
+                <div>
+                  <dt>Zakup</dt>
+                  <dd>{{ ticket.purchaseDate | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                </div>
+                <div>
+                  <dt>Cena</dt>
+                  <dd>{{ ticket.price | number: '1.2-2' }} PLN</dd>
+                </div>
+                @if (ticket.validatedAt) {
+                  <div>
+                    <dt>Skasowany</dt>
+                    <dd>{{ ticket.validatedAt | date: 'dd.MM.yyyy, HH:mm' }}</dd>
+                  </div>
+                }
+                @if (ticket.validatedVehicleLabel) {
+                  <div>
+                    <dt>Pojazd</dt>
+                    <dd>{{ ticket.validatedVehicleLabel }}</dd>
+                  </div>
+                }
+                @if (ticket.validFrom) {
+                  <div>
+                    <dt>Wazny od</dt>
+                    <dd>{{ ticket.validFrom | date: 'dd.MM.yyyy' }}</dd>
+                  </div>
+                }
+                @if (ticket.validTo) {
+                  <div>
+                    <dt>Wazny do</dt>
+                    <dd>{{ ticket.validTo | date: 'dd.MM.yyyy' }}</dd>
+                  </div>
+                }
+              </dl>
+            </article>
+          }
+
+          @for (placeholder of emptyTicketSlots(); track placeholder) {
+            <article class="ticket-row ticket-row--placeholder ticket-row--ticket-placeholder" aria-hidden="true"></article>
+          }
+        </div>
+
+        @if (isTicketsLoading() && tickets().length > 0) {
+          <div class="collection-loading-overlay" aria-hidden="true">
+            <span class="collection-loading-spinner"></span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (ticketTotalElements() > 0) {
+      <app-pagination-controls
+        [page]="ticketPage()"
+        [size]="ticketPageSize()"
+        [totalElements]="ticketTotalElements()"
+        [totalPages]="ticketTotalPages()"
+        [first]="ticketFirstPage()"
+        [last]="ticketLastPage()"
+        [isLoading]="isTicketsLoading()"
+        density="compact"
+        [sizeOptions]="ticketPageSizeOptions"
+        itemLabel="biletow"
+        (pageChanged)="changeTicketPage($event)"
+        (sizeChanged)="changeTicketPageSize($event)"
+      />
+    }
+  </article>
+</section>
+
+@if (selectedValidationTicket(); as selectedValidationTicket) {
+  <app-ticket-validation-modal
+    [title]="ticketTitle(selectedValidationTicket)"
+    [form]="validationForm"
+    [error]="validationError()"
+    [isSubmitting]="isValidationPending()"
+    (closeRequested)="closeValidationModal()"
+    (submitRequested)="submitValidation()"
+  />
+}

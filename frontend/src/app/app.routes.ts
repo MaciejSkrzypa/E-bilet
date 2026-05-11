@@ -1,7 +1,10 @@
 import { Routes } from '@angular/router';
 
 import { authGuard, guestOnlyGuard, inspectorPublicRedirectGuard, roleGuard } from './core/guards/auth/auth.guards';
-import { passengerDashboardResolver } from './core/resolvers/passenger-dashboard/passenger-dashboard.resolver';
+import {
+  passengerTicketsResolver,
+  passengerTransactionsResolver,
+} from './core/resolvers/passenger-dashboard/passenger-dashboard.resolver';
 
 export const routes: Routes = [
   {
@@ -22,11 +25,42 @@ export const routes: Routes = [
   {
     path: 'passenger',
     canActivate: [authGuard, roleGuard('PASSENGER')],
-    resolve: {
-      dashboard: passengerDashboardResolver,
-    },
     loadComponent: () =>
       import('./pages/passenger-dashboard-page/passenger-dashboard-page').then((m) => m.PassengerDashboardPageComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'finance',
+      },
+      {
+        path: 'finance',
+        resolve: {
+          finance: passengerTransactionsResolver,
+        },
+        loadComponent: () =>
+          import('./pages/passenger-dashboard-page/passenger-finance-section').then(
+            (m) => m.PassengerFinanceSectionComponent,
+          ),
+      },
+      {
+        path: 'tickets',
+        resolve: {
+          tickets: passengerTicketsResolver,
+        },
+        loadComponent: () =>
+          import('./pages/passenger-dashboard-page/passenger-tickets-section').then(
+            (m) => m.PassengerTicketsSectionComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/passenger-dashboard-page/passenger-profile-section').then(
+            (m) => m.PassengerProfileSectionComponent,
+          ),
+      },
+    ],
   },
   {
     path: 'inspector',

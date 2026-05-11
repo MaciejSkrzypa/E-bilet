@@ -60,8 +60,7 @@ describe('LoginPageComponent', () => {
     expect(loginMock).toHaveBeenCalledWith({ email: 'anna@example.com', password: 'secret' });
     expect(TestBed.inject(AuthStoreService).currentUser()?.email).toBe('anna@example.com');
     expect(navigateSpy).not.toHaveBeenCalled();
-    expect(navigateCommandsSpy).toHaveBeenCalledWith(['/passenger'], {
-      fragment: 'finance',
+    expect(navigateCommandsSpy).toHaveBeenCalledWith(['/passenger/finance'], {
       replaceUrl: true,
     });
   });
@@ -93,7 +92,7 @@ describe('LoginPageComponent', () => {
           useValue: {
             snapshot: {
               queryParamMap: {
-                get: () => '/passenger#tickets',
+                get: () => '/passenger/tickets',
               },
             },
           },
@@ -111,7 +110,7 @@ describe('LoginPageComponent', () => {
 
     component.submit();
 
-    expect(navigateByUrlSpy).toHaveBeenCalledWith('/passenger#tickets', { replaceUrl: true });
+    expect(navigateByUrlSpy).toHaveBeenCalledWith('/passenger/tickets', { replaceUrl: true });
   });
 
   it('should expose backend error', async () => {

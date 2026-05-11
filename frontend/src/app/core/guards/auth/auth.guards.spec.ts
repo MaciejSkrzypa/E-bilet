@@ -3,11 +3,9 @@ import { Router, UrlTree, provideRouter } from '@angular/router';
 
 import {
   authGuard,
-  fragmentForRole,
   guestOnlyGuard,
   inspectorPublicRedirectGuard,
   roleGuard,
-  routeForRole,
 } from './auth.guards';
 import { AuthStoreService } from '../../services/auth-store/auth-store.service';
 
@@ -36,15 +34,6 @@ describe('auth guards', () => {
     TestBed.configureTestingModule({
       providers: [provideRouter([])],
     });
-  });
-
-  it('should route by role', () => {
-    expect(routeForRole('PASSENGER')).toBe('/passenger');
-    expect(routeForRole('INSPECTOR')).toBe('/inspector');
-    expect(routeForRole(null)).toBe('/passenger');
-    expect(fragmentForRole('PASSENGER')).toBe('finance');
-    expect(fragmentForRole('INSPECTOR')).toBeNull();
-    expect(fragmentForRole(null)).toBe('finance');
   });
 
   it('should redirect unauthenticated user to homepage', () => {
@@ -98,7 +87,7 @@ describe('auth guards', () => {
 
     const result = TestBed.runInInjectionContext(() => guestOnlyGuard({} as never, {} as never));
 
-    expect(router.serializeUrl(result as UrlTree)).toBe('/passenger#finance');
+    expect(router.serializeUrl(result as UrlTree)).toBe('/passenger/finance');
   });
 
   it('should allow guest through guestOnlyGuard', () => {
@@ -117,7 +106,7 @@ describe('auth guards', () => {
 
     const result = TestBed.runInInjectionContext(() => roleGuard('INSPECTOR')({} as never, {} as never));
 
-    expect(router.serializeUrl(result as UrlTree)).toBe('/passenger#finance');
+    expect(router.serializeUrl(result as UrlTree)).toBe('/passenger/finance');
   });
 
   it('should redirect unauthenticated user in roleGuard', () => {

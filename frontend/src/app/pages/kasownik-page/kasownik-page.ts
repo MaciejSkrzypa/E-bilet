@@ -8,6 +8,7 @@ import { TicketResponse, TicketType } from '../../core/models/api/api.models';
 import { KasownikApiService } from '../../core/services/api/kasownik-api.service';
 import { TicketsApiService } from '../../core/services/api/tickets-api.service';
 import { AuthStoreService } from '../../core/services/auth-store/auth-store.service';
+import { TICKET_VALIDATION_SUCCESS_MESSAGE } from '../../shared/constants/ticket.constants';
 import { VehicleAutocompleteFieldComponent } from '../../shared/components/vehicle-autocomplete-field/vehicle-autocomplete-field';
 import { uuidPattern } from '../../shared/utils/form-validators/form-validators';
 import { getErrorMessage } from '../../shared/utils/http-error/http-error.util';
@@ -128,7 +129,7 @@ export class KasownikPageComponent {
       .subscribe({
         next: (ticket) => {
           this.ticket.set(ticket);
-          this.successMessage.set('Bilet zostal skasowany poprawnie.');
+          this.successMessage.set(TICKET_VALIDATION_SUCCESS_MESSAGE);
           this.availableTickets.update((tickets) => tickets.filter((currentTicket) => currentTicket.code !== ticket.code));
 
           if (this.validationMode() === 'ticket') {

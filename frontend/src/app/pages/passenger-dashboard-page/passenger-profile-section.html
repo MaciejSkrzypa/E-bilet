@@ -1,0 +1,18 @@
+<section class="insight-grid section-spacing profile-grid">
+  <article class="panel">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">O mnie</p>
+      </div>
+    </div>
+
+    <div class="profile-fields">
+      @for (field of profileFields(); track field.label) {
+        <article class="profile-card">
+          <span>{{ field.label }}</span>
+          <strong>{{ field.value }}</strong>
+        </article>
+      }
+    </div>
+  </article>
+</section>

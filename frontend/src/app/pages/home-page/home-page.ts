@@ -14,7 +14,9 @@ import {
 import { OffersApiService } from '../../core/services/api/offers-api.service';
 import { TicketsApiService } from '../../core/services/api/tickets-api.service';
 import { AuthStoreService } from '../../core/services/auth-store/auth-store.service';
+import { TICKET_TYPE_FILTER_OPTIONS } from '../../shared/constants/ticket.constants';
 import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls';
+import { toDateInputValue } from '../../shared/utils/date/date.util';
 import { periodDateRangeValidator } from '../../shared/utils/form-validators/form-validators';
 import { getErrorMessage } from '../../shared/utils/http-error/http-error.util';
 import {
@@ -35,11 +37,7 @@ import {
   styleUrl: './home-page.scss',
 })
 export class HomePageComponent {
-  protected readonly ticketTypeFilters = [
-    { type: 'SINGLE' as const, label: 'Jednorazowe' },
-    { type: 'TIME' as const, label: 'Czasowe' },
-    { type: 'PERIOD' as const, label: 'Okresowe' },
-  ];
+  protected readonly ticketTypeFilters = TICKET_TYPE_FILTER_OPTIONS;
   protected readonly offerPageSizeOptions = [4, 8, 20];
   protected readonly authStore = inject(AuthStoreService);
 
@@ -77,7 +75,7 @@ export class HomePageComponent {
 
     return Array.from({ length: missingItems }, (_, index) => index);
   });
-  protected readonly minimumPeriodStart = signal(this.toDateInputValue(new Date()));
+  protected readonly minimumPeriodStart = signal(toDateInputValue(new Date()));
   protected readonly periodPurchaseForm: PeriodPurchaseFormGroup = this.formBuilder.group(
     {
       validFrom: ['', Validators.required],
@@ -179,12 +177,7 @@ export class HomePageComponent {
 
   protected closePurchaseModal(): void {
     this.selectedPurchaseOffer.set(null);
-    this.periodPurchaseForm.reset({
-      validFrom: '',
-      validTo: '',
-    });
-    this.periodPurchaseForm.markAsPristine();
-    this.periodPurchaseForm.markAsUntouched();
+    this.resetPeriodPurchaseForm();
   }
 
   protected confirmPurchase(): void {
@@ -253,13 +246,17 @@ export class HomePageComponent {
   }
 
   private openPurchaseModal(offer: TicketOfferResponse): void {
+    this.resetPeriodPurchaseForm();
+    this.selectedPurchaseOffer.set(offer);
+  }
+
+  private resetPeriodPurchaseForm(): void {
     this.periodPurchaseForm.reset({
       validFrom: '',
       validTo: '',
     });
     this.periodPurchaseForm.markAsPristine();
     this.periodPurchaseForm.markAsUntouched();
-    this.selectedPurchaseOffer.set(offer);
   }
 
   private purchaseOffer(
@@ -315,13 +312,5 @@ export class HomePageComponent {
     this.offerTotalPages.set(offersPage.totalPages);
     this.offerFirstPage.set(offersPage.first);
     this.offerLastPage.set(offersPage.last);
-  }
-
-  private toDateInputValue(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
   }
 }

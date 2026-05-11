@@ -3,9 +3,10 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
 
-import { routeForRole } from '../../core/guards/auth/auth.guards';
+import { getRoleRouteLocation } from '../../core/routing/role-routing.util';
 import { AuthApiService } from '../../core/services/api/auth-api.service';
 import { AuthStoreService } from '../../core/services/auth-store/auth-store.service';
+import { toDateInputValue } from '../../shared/utils/date/date.util';
 import { matchingFieldsValidator } from '../../shared/utils/form-validators/form-validators';
 import { getErrorMessage } from '../../shared/utils/http-error/http-error.util';
 
@@ -23,7 +24,7 @@ export class RegisterPageComponent {
 
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly maximumDateOfBirth = this.toDateInputValue(new Date());
+  protected readonly maximumDateOfBirth = toDateInputValue(new Date());
   protected readonly form = this.formBuilder.group(
     {
       email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
@@ -58,8 +59,9 @@ export class RegisterPageComponent {
       .subscribe({
         next: (response) => {
           this.authStore.login(response);
-          void this.router.navigate([routeForRole(response.user.role)], {
-            fragment: response.user.role === 'PASSENGER' ? 'finance' : undefined,
+          const target = getRoleRouteLocation(response.user.role);
+
+          void this.router.navigate(target.commands, {
             replaceUrl: true,
           });
         },
@@ -67,13 +69,5 @@ export class RegisterPageComponent {
           this.errorMessage.set(getErrorMessage(error, 'Nie udalo sie utworzyc konta.'));
         },
       });
-  }
-
-  private toDateInputValue(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
   }
 }

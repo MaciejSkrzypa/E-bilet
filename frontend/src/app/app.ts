@@ -12,7 +12,6 @@ import { AuthStoreService } from './core/services/auth-store/auth-store.service'
 interface NavItem {
   label: string;
   href: string;
-  fragment?: string;
   exact?: boolean;
 }
 
@@ -60,7 +59,6 @@ export class App {
       {
         label: 'Panel pasazera',
         href: '/passenger',
-        fragment: 'finance',
       },
     ];
   });
@@ -94,9 +92,7 @@ export class App {
   protected isNavItemActive(item: NavItem): boolean {
     const currentUrl = this.currentUrl();
     const targetUrl = this.router.serializeUrl(
-      this.router.createUrlTree([item.href], {
-        fragment: item.fragment,
-      }),
+      this.router.createUrlTree([item.href]),
     );
 
     return item.exact ? currentUrl === targetUrl : currentUrl.startsWith(targetUrl);
@@ -112,18 +108,14 @@ export class App {
     }
 
     this.topUpError.set(null);
-    this.topUpForm.reset({ amount: 0 });
-    this.topUpForm.markAsPristine();
-    this.topUpForm.markAsUntouched();
+    this.resetTopUpForm();
     this.isTopUpModalOpen.set(true);
   }
 
   protected closeTopUpModal(): void {
     this.isTopUpModalOpen.set(false);
     this.topUpError.set(null);
-    this.topUpForm.reset({ amount: 0 });
-    this.topUpForm.markAsPristine();
-    this.topUpForm.markAsUntouched();
+    this.resetTopUpForm();
   }
 
   protected selectTopUpAmount(amount: number): void {
@@ -155,5 +147,11 @@ export class App {
           this.topUpError.set('Nie udalo sie doladowac konta.');
         },
       });
+  }
+
+  private resetTopUpForm(): void {
+    this.topUpForm.reset({ amount: 0 });
+    this.topUpForm.markAsPristine();
+    this.topUpForm.markAsUntouched();
   }
 }

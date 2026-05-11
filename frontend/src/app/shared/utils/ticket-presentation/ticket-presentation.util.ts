@@ -1,4 +1,5 @@
 import { TicketOfferResponse, TicketResponse, TicketType } from '../../../core/models/api/api.models';
+import { toDateInputValue } from '../date/date.util';
 
 export type TicketStatusTone = 'neutral' | 'warning' | 'success' | 'danger';
 
@@ -28,7 +29,7 @@ export function getTicketStatus(ticket: TicketResponse, referenceDate = new Date
       return { label: 'Niepelna konfiguracja biletu okresowego', tone: 'danger' };
     }
 
-    const referenceDateLabel = toDateOnlyValue(referenceDate);
+    const referenceDateLabel = toDateInputValue(referenceDate);
 
     if (referenceDateLabel < ticket.validFrom) {
       return { label: 'Oczekuje na rozpoczecie waznosci', tone: 'warning' };
@@ -46,6 +47,13 @@ export function getTicketStatus(ticket: TicketResponse, referenceDate = new Date
   }
 
   if (ticket.type === 'SINGLE') {
+    const referenceDateLabel = toDateInputValue(referenceDate);
+    const validationDateLabel = ticket.validatedAt.slice(0, 10);
+
+    if (validationDateLabel !== referenceDateLabel) {
+      return { label: 'Bilet jednorazowy wygasl', tone: 'danger' };
+    }
+
     return { label: 'Skasowany w pojezdzie', tone: 'success' };
   }
 
@@ -113,12 +121,4 @@ function buildTicketTitle(source: TicketTitleSource): string {
   }
 
   return `Bilet okresowy ${source.fare === 'NORMAL' ? 'normalny' : 'ulgowy'}`;
-}
-
-function toDateOnlyValue(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
 }

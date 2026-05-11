@@ -91,8 +91,7 @@ describe('RegisterPageComponent', () => {
     component.submit();
 
     expect(TestBed.inject(AuthStoreService).currentUser()?.email).toBe('anna@example.com');
-    expect(navigateSpy).toHaveBeenCalledWith(['/passenger'], {
-      fragment: 'finance',
+    expect(navigateSpy).toHaveBeenCalledWith(['/passenger/finance'], {
       replaceUrl: true,
     });
   });
