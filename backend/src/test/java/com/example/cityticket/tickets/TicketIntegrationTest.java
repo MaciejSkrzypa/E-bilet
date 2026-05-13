@@ -360,19 +360,25 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	void rejectsRemovedValidatedFilter() throws Exception {
+	void ignoresRemovedValidatedFilter() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(token, "10.00");
+		purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
 
-		mockMvc.perform(get("/api/tickets?validated=false").header("Authorization", bearer(token)))
-				.andExpect(status().isBadRequest());
+		mockMvc.perform(get("/api/tickets?validated=true").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(1));
 	}
 
 	@Test
-	void rejectsRemovedActiveFilter() throws Exception {
+	void ignoresRemovedActiveFilter() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(token, "10.00");
+		purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
 
 		mockMvc.perform(get("/api/tickets?active=true").header("Authorization", bearer(token)))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(1));
 	}
 
 	@Test
