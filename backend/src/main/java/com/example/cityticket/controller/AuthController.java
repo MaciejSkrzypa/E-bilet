@@ -11,7 +11,6 @@ import com.example.cityticket.dto.LoginRequest;
 import com.example.cityticket.dto.LoginResponse;
 import com.example.cityticket.dto.RegisterRequest;
 import com.example.cityticket.dto.UserResponse;
-import com.example.cityticket.entity.User;
 import com.example.cityticket.service.AuthService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -28,8 +27,7 @@ public class AuthController {
 
 	@PostMapping("/register")
 	public ResponseEntity<UserResponse> register(@RequestBody @Valid RegisterRequest request) {
-		User user = authService.registerPassenger(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(user));
+		return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerPassenger(request));
 	}
 
 	@PostMapping("/login")

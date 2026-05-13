@@ -4,5 +4,4 @@ export const environment = {
   production: false,
   backendOrigin,
   apiBaseUrl: `${backendOrigin}/api`,
-  healthUrl: `${backendOrigin}/health`,
 };

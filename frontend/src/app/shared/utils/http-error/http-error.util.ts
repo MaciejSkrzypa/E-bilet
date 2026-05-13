@@ -29,6 +29,7 @@ const EXACT_MESSAGE_MAP: Record<string, string> = {
   'PERIOD tickets do not require validation (no kasowanie)': 'Bilety okresowe nie wymagają kasowania.',
   'Request validation failed': 'Sprawdź poprawność formularza.',
   'Ticket not found': 'Nie znaleziono biletu.',
+  'Ticket does not belong to authenticated user': 'Ten bilet nie należy do zalogowanego użytkownika.',
   'Ticket time fields must match its type': 'Dane ważności biletu nie zgadzają się z jego typem.',
   'User not found': 'Nie znaleziono użytkownika.',
   'Vehicle not found': 'Nie znaleziono pojazdu.',

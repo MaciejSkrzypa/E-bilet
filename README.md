@@ -17,7 +17,6 @@ Adresy po starcie:
 - backend API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/docs`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-- health: `http://localhost:8080/health`
 - pgAdmin: `http://localhost:5050`
 
 ## Start projektu
@@ -119,9 +118,53 @@ Po wejściu do kontenera:
 ./mvnw package
 ```
 
+### Kasownik dla osobnego serwisu
+
+Lokalne środowisko Docker Compose konfiguruje jednego klienta technicznego kasownika:
+
+- nazwa: `local-kasownik`
+- header z kluczem: `X-Kasownik-Key`
+- wartość klucza API: `dev-only-kasownik-integration-key`
+- powiązany pojazd: `T-100`
+
+Endpoint dla osobnego serwisu:
+
+```text
+POST /api/integrations/kasownik/validate
+```
+
+Request musi zawierać:
+
+- header `X-Kasownik-Key: dev-only-kasownik-integration-key`
+- body JSON tylko z polem `code`
+
+Przykład:
+
+```bash
+curl -X POST http://localhost:8080/api/integrations/kasownik/validate \
+  -H "Content-Type: application/json" \
+  -H "X-Kasownik-Key: dev-only-kasownik-integration-key" \
+  -d '{"code":"123e4567-e89b-12d3-a456-426614174000"}'
+```
+
+Jeżeli klucz jest poprawny, backend sam przypisze walidację do pojazdu `T-100`. W tym endpointcie nie wysyła się `vehicleId`.
+
+Najczęstsze odpowiedzi:
+
+- `200 OK` gdy bilet został poprawnie skasowany
+- `401 Unauthorized` gdy brakuje headera `X-Kasownik-Key` albo klucz jest błędny
+- `404 Not Found` gdy `code` nie wskazuje istniejącego biletu
+- `409 Conflict` gdy bilet został już wcześniej skasowany
+
+Jeśli chcesz zmienić ten klucz albo pojazd w lokalnym środowisku, ustaw odpowiednio:
+
+```bash
+APP_KASOWNIK_INTEGRATIONS_CLIENTS_0_API_KEY
+APP_KASOWNIK_INTEGRATIONS_CLIENTS_0_VEHICLE_LABEL
+```
+
 Przydatne endpointy:
 
-- `GET /health`
 - `GET /docs`
 - `GET /v3/api-docs`
 

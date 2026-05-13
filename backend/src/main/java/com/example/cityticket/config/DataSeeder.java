@@ -90,8 +90,7 @@ public class DataSeeder implements CommandLineRunner {
 	private Map<String, Vehicle> seedVehicles() {
 		if (vehicleRepository.count() > 0) {
 			log.info("Vehicles already present — skipping seed.");
-			return vehicleRepository.findAll().stream().collect(LinkedHashMap::new, (map, vehicle) -> map.put(vehicle.getLabel(), vehicle),
-					Map::putAll);
+			return vehiclesByLabel(vehicleRepository.findAll());
 		}
 
 		List<Vehicle> vehicles = List.of(
@@ -111,9 +110,16 @@ public class DataSeeder implements CommandLineRunner {
 		List<Vehicle> savedVehicles = vehicleRepository.saveAll(vehicles);
 		log.info("Seeded {} vehicles.", savedVehicles.size());
 
+		return vehiclesByLabel(savedVehicles);
+	}
+
+	private Map<String, Vehicle> vehiclesByLabel(List<Vehicle> vehicles) {
 		Map<String, Vehicle> vehiclesByLabel = new LinkedHashMap<>();
-		for (Vehicle vehicle : savedVehicles) {
-			vehiclesByLabel.put(vehicle.getLabel(), vehicle);
+		for (Vehicle vehicle : vehicles) {
+			Vehicle previous = vehiclesByLabel.putIfAbsent(vehicle.getLabel(), vehicle);
+			if (previous != null) {
+				throw new IllegalStateException("Duplicate vehicle label detected: " + vehicle.getLabel());
+			}
 		}
 		return vehiclesByLabel;
 	}

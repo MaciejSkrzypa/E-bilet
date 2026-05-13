@@ -4,18 +4,12 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
 
 import com.example.cityticket.AbstractIntegrationTest;
 import com.example.cityticket.entity.Fare;
-import com.example.cityticket.entity.TicketOffer;
 import com.example.cityticket.entity.TicketType;
-import com.example.cityticket.entity.Vehicle;
-import com.example.cityticket.repository.TicketOfferRepository;
-import com.example.cityticket.repository.VehicleRepository;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.example.cityticket.util.AppTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,51 +17,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class KasownikIntegrationTest extends AbstractIntegrationTest {
 
-	@Autowired
-	private TicketOfferRepository ticketOfferRepository;
-
-	@Autowired
-	private VehicleRepository vehicleRepository;
-
-	private Long offerId(TicketType type, Fare fare, Integer durationMinutes) {
-		return ticketOfferRepository.findAll().stream()
-				.filter(o -> o.getType() == type && o.getFare() == fare
-						&& java.util.Objects.equals(o.getDurationMinutes(), durationMinutes))
-				.findFirst().map(TicketOffer::getId).orElseThrow();
-	}
-
-	private Long anyVehicleId() {
-		return vehicleRepository.findAll().stream().findFirst().map(Vehicle::getId).orElseThrow();
-	}
-
-	private String purchaseTicket(String token, Long offerId, String validFrom, String validTo) throws Exception {
-		String body = validFrom == null
-				? "{\"offerId\":" + offerId + "}"
-				: "{\"offerId\":" + offerId + ",\"validFrom\":\"" + validFrom + "\",\"validTo\":\"" + validTo + "\"}";
-		MvcResult res = mockMvc.perform(post("/api/tickets")
-				.header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON).content(body))
-				.andExpect(status().isCreated()).andReturn();
-		JsonNode json = objectMapper.readTree(res.getResponse().getContentAsString());
-		return json.get("code").asText();
-	}
-
-	private void topUp(String token, String amount) throws Exception {
-		mockMvc.perform(post("/api/account/topup")
-				.header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"amount\": " + amount + "}"))
-				.andExpect(status().isOk());
-	}
-
 	@Test
 	void validatesSingleTicketAndAttachesVehicle() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "10.00");
-		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null), null, null);
-		Long vid = anyVehicleId();
+		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
+		Long vid = firstVehicleId();
 
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + vid + "}"))
 				.andExpect(status().isOk())
@@ -79,10 +37,11 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 	void validatesTimeTicket() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "10.00");
-		String code = purchaseTicket(token, offerId(TicketType.TIME, Fare.NORMAL, 30), null, null);
-		Long vid = anyVehicleId();
+		String code = purchaseTicket(token, offerId(TicketType.TIME, Fare.NORMAL, 30));
+		Long vid = firstVehicleId();
 
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + vid + "}"))
 				.andExpect(status().isOk())
@@ -94,13 +53,14 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 	void rejectsValidationOfPeriodTicket() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "100.00");
-		LocalDate today = LocalDate.now();
+		LocalDate today = AppTime.today();
 		String code = purchaseTicket(token, offerId(TicketType.PERIOD, Fare.NORMAL, null),
 				today.toString(), today.plusDays(7).toString());
 
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + anyVehicleId() + "}"))
+				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + firstVehicleId() + "}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("PERIOD")));
 	}
@@ -109,22 +69,31 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 	void doubleValidationReturns409() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "10.00");
-		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null), null, null);
-		Long vid = anyVehicleId();
+		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
+		Long vid = firstVehicleId();
 		String body = "{\"code\":\"" + code + "\",\"vehicleId\":" + vid + "}";
 
-		mockMvc.perform(post("/api/kasownik/validate").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
 				.andExpect(status().isOk());
-		mockMvc.perform(post("/api/kasownik/validate").contentType(MediaType.APPLICATION_JSON).content(body))
+		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("already validated")));
 	}
 
 	@Test
 	void unknownTicketCodeReturns404() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + UUID.randomUUID() + "\",\"vehicleId\":" + anyVehicleId() + "}"))
+				.content("{\"code\":\"" + UUID.randomUUID() + "\",\"vehicleId\":" + firstVehicleId() + "}"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("Ticket not found"));
 	}
@@ -133,9 +102,10 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 	void unknownVehicleIdReturns404() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "10.00");
-		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null), null, null);
+		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
 
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{\"code\":\"" + code + "\",\"vehicleId\": 99999}"))
 				.andExpect(status().isNotFound())
@@ -144,7 +114,10 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
 	void emptyBodyReturns400WithFieldErrors() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+
 		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{}"))
 				.andExpect(status().isBadRequest())
@@ -152,10 +125,57 @@ class KasownikIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	void kasownikDoesNotRequireAuth() throws Exception {
+	void passengerCannotValidateAnotherUsersTicket() throws Exception {
+		String owner = registerPassengerAndLogin("owner@example.com", "tajne123");
+		String otherPassenger = registerPassengerAndLogin("other@example.com", "tajne123");
+		topUp(owner, "10.00");
+		String code = purchaseTicket(owner, offerId(TicketType.SINGLE, Fare.NORMAL, null));
+
+		mockMvc.perform(post("/api/kasownik/validate")
+				.header("Authorization", bearer(otherPassenger))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + code + "\",\"vehicleId\":" + firstVehicleId() + "}"))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Ticket does not belong to authenticated user"));
+	}
+
+	@Test
+	void kasownikRequiresPassengerAuth() throws Exception {
 		mockMvc.perform(post("/api/kasownik/validate")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + UUID.randomUUID() + "\",\"vehicleId\":1}"))
-				.andExpect(status().isNotFound()); // 404 (ticket nie istnieje), nie 401/403
+				.content("{\"code\":\"" + UUID.randomUUID() + "\",\"vehicleId\":" + firstVehicleId() + "}"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void integrationKasownikValidatesWithoutJwtAndUsesConfiguredVehicle() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+		topUp(token, "10.00");
+		String code = purchaseTicket(token, offerId(TicketType.SINGLE, Fare.NORMAL, null));
+
+		mockMvc.perform(post("/api/integrations/kasownik/validate")
+				.header("X-Kasownik-Key", kasownikIntegrationApiKey())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + code + "\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.validatedAt").exists())
+				.andExpect(jsonPath("$.validatedVehicleLabel").value("T-100"));
+	}
+
+	@Test
+	void integrationKasownikRequiresApiKey() throws Exception {
+		mockMvc.perform(post("/api/integrations/kasownik/validate")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + UUID.randomUUID() + "\"}"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void integrationKasownikRejectsInvalidApiKey() throws Exception {
+		mockMvc.perform(post("/api/integrations/kasownik/validate")
+				.header("X-Kasownik-Key", "wrong-key")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"code\":\"" + UUID.randomUUID() + "\"}"))
+				.andExpect(status().isUnauthorized());
 	}
 }

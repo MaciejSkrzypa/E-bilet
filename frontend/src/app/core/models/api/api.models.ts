@@ -125,8 +125,6 @@ export interface OffersQuery extends PageQuery {
 export interface TicketsQuery extends PageQuery {
   type?: readonly TicketType[];
   status?: readonly TicketFilterStatus[];
-  validated?: boolean | null;
-  active?: boolean | null;
 }
 
 export interface TransactionsQuery extends PageQuery {}
