@@ -40,10 +40,7 @@ export class App {
     const user = this.currentUser();
 
     if (!user) {
-      return [
-        { label: 'Start', href: '/', exact: true },
-        { label: 'Kasownik', href: '/kasownik' },
-      ];
+      return [{ label: 'Start', href: '/', exact: true }];
     }
 
     if (user.role === 'INSPECTOR') {

@@ -82,7 +82,7 @@ export const routes: Routes = [
   },
   {
     path: 'kasownik',
-    canActivate: [inspectorPublicRedirectGuard],
+    canActivate: [authGuard, roleGuard('PASSENGER')],
     loadComponent: () => import('./pages/kasownik-page/kasownik-page').then((m) => m.KasownikPageComponent),
   },
   {

@@ -158,7 +158,7 @@ export class KasownikPageComponent {
         size: 100,
         sort: 'purchaseDate,desc',
         type: ['SINGLE', 'TIME'],
-        validated: false,
+        status: ['REQUIRES_VALIDATION'],
       })
       .pipe(
         finalize(() => this.isLoadingOwnedTickets.set(false)),

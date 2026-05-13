@@ -1,7 +1,5 @@
 package com.example.cityticket.service;
 
-import java.time.LocalDate;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,29 +34,18 @@ public class AuthService {
 	private final JwtTokenService jwtTokenService;
 
 	@Transactional
-	public User registerPassenger(RegisterRequest request) {
-		return registerPassenger(
-				request.email(),
-				request.password(),
-				request.firstName(),
-				request.lastName(),
-				request.dateOfBirth());
-	}
-
-	@Transactional
-	public User registerPassenger(String email, String rawPassword, String firstName,
-			String lastName, LocalDate dateOfBirth) {
-		if (userRepository.existsByEmail(email)) {
+	public UserResponse registerPassenger(RegisterRequest request) {
+		if (userRepository.existsByEmail(request.email())) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, EMAIL_ALREADY_REGISTERED);
 		}
 		User user = new User(
-				email,
-				passwordEncoder.encode(rawPassword),
-				firstName,
-				lastName,
-				dateOfBirth,
+				request.email(),
+				passwordEncoder.encode(request.password()),
+				request.firstName(),
+				request.lastName(),
+				request.dateOfBirth(),
 				Role.PASSENGER);
-		return userRepository.save(user);
+		return UserResponse.from(userRepository.save(user));
 	}
 
 	@Transactional(readOnly = true)

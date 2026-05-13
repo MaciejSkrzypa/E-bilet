@@ -35,14 +35,6 @@ export function buildTicketsQueryParams(query?: TicketsQuery): HttpParams {
     params = appendTicketStatuses(params, query.status);
   }
 
-  if (typeof query?.validated === 'boolean') {
-    params = params.set('validated', String(query.validated));
-  }
-
-  if (typeof query?.active === 'boolean') {
-    params = params.set('active', String(query.active));
-  }
-
   return params;
 }
 

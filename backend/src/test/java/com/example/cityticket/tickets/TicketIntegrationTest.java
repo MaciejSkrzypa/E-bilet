@@ -7,11 +7,8 @@ import org.springframework.http.MediaType;
 
 import com.example.cityticket.AbstractIntegrationTest;
 import com.example.cityticket.entity.Fare;
-import com.example.cityticket.entity.TicketOffer;
 import com.example.cityticket.entity.TicketType;
-import com.example.cityticket.repository.TicketOfferRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.cityticket.util.AppTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,26 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class TicketIntegrationTest extends AbstractIntegrationTest {
-
-	@Autowired
-	private TicketOfferRepository ticketOfferRepository;
-
-	private Long offerId(TicketType type, Fare fare, Integer durationMinutes) {
-		return ticketOfferRepository.findAll().stream()
-				.filter(o -> o.getType() == type && o.getFare() == fare
-						&& java.util.Objects.equals(o.getDurationMinutes(), durationMinutes))
-				.findFirst()
-				.map(TicketOffer::getId)
-				.orElseThrow();
-	}
-
-	private void topUp(String token, String amount) throws Exception {
-		mockMvc.perform(post("/api/account/topup")
-				.header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"amount\": " + amount + "}"))
-				.andExpect(status().isOk());
-	}
 
 	@Test
 	void purchasesSingleAndDeductsBalance() throws Exception {
@@ -82,7 +59,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "100.00");
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
-		LocalDate from = LocalDate.now();
+		LocalDate from = AppTime.today();
 		LocalDate to = from.plusDays(6); // 7 dni inkluzywnie → 7 × 5.00 = 35.00
 
 		mockMvc.perform(post("/api/tickets")
@@ -102,7 +79,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "100.00");
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
-		LocalDate today = LocalDate.now();
+		LocalDate today = AppTime.today();
 
 		mockMvc.perform(post("/api/tickets")
 				.header("Authorization", bearer(token))
@@ -145,8 +122,8 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "10.00");
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
-		LocalDate from = LocalDate.now().plusDays(5);
-		LocalDate to = LocalDate.now();
+		LocalDate from = AppTime.today().plusDays(5);
+		LocalDate to = AppTime.today();
 
 		mockMvc.perform(post("/api/tickets")
 				.header("Authorization", bearer(token))
@@ -249,8 +226,8 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 				.andExpect(status().isCreated());
 		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON).content(
-						"{\"offerId\":" + period + ",\"validFrom\":\"" + LocalDate.now()
-								+ "\",\"validTo\":\"" + LocalDate.now() + "\"}"))
+						"{\"offerId\":" + period + ",\"validFrom\":\"" + AppTime.today()
+								+ "\",\"validTo\":\"" + AppTime.today() + "\"}"))
 				.andExpect(status().isCreated());
 
 		mockMvc.perform(get("/api/tickets?type=SINGLE,TIME").header("Authorization", bearer(token)))
@@ -258,7 +235,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 	}
 
 	@Test
-	void filtersByValidatedFalseShowsOnlyUnpunched() throws Exception {
+	void filtersByRequiresValidationStatusShowsOnlyUnpunchedSingleAndTimeTickets() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "200.00");
 		Long single = offerId(TicketType.SINGLE, Fare.NORMAL, null);
@@ -267,20 +244,19 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 				.contentType(MediaType.APPLICATION_JSON).content("{\"offerId\":" + single + "}"))
 				.andExpect(status().isCreated());
 
-		mockMvc.perform(get("/api/tickets?validated=false").header("Authorization", bearer(token)))
+		mockMvc.perform(get("/api/tickets?status=REQUIRES_VALIDATION").header("Authorization", bearer(token)))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalElements").value(1));
-		mockMvc.perform(get("/api/tickets?validated=true").header("Authorization", bearer(token)))
-				.andExpect(jsonPath("$.totalElements").value(0));
 	}
 
 	@Test
-	void filtersByCurrentlyActiveTickets() throws Exception {
+	void filtersByActiveStatus() throws Exception {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 		topUp(token, "300.00");
 		Long single = offerId(TicketType.SINGLE, Fare.NORMAL, null);
 		Long time = offerId(TicketType.TIME, Fare.NORMAL, 30);
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
-		LocalDate today = LocalDate.now();
+		LocalDate today = AppTime.today();
 
 		var singlePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -290,10 +266,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 
 		String singleCode = objectMapper.readTree(singlePurchase.getResponse().getContentAsString()).get("code").asText();
 
-		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + singleCode + "\",\"vehicleId\":1}"))
-				.andExpect(status().isOk());
+			validateOwnedTicket(token, singleCode, firstVehicleId());
 
 		var timePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -303,10 +276,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 
 		String timeCode = objectMapper.readTree(timePurchase.getResponse().getContentAsString()).get("code").asText();
 
-		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + timeCode + "\",\"vehicleId\":1}"))
-				.andExpect(status().isOk());
+			validateOwnedTicket(token, timeCode, firstVehicleId());
 
 		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -318,7 +288,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 				.content("{\"offerId\":" + period + ",\"validFrom\":\"" + today.plusDays(2) + "\",\"validTo\":\"" + today.plusDays(5) + "\"}"))
 				.andExpect(status().isCreated());
 
-		mockMvc.perform(get("/api/tickets?active=true").header("Authorization", bearer(token)))
+		mockMvc.perform(get("/api/tickets?status=ACTIVE").header("Authorization", bearer(token)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalElements").value(3))
 				.andExpect(jsonPath("$.content[0].type").exists())
@@ -332,7 +302,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		Long single = offerId(TicketType.SINGLE, Fare.NORMAL, null);
 		Long time = offerId(TicketType.TIME, Fare.NORMAL, 30);
 		Long period = offerId(TicketType.PERIOD, Fare.NORMAL, null);
-		LocalDate today = LocalDate.now();
+		LocalDate today = AppTime.today();
 
 		var singlePurchase = mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -350,10 +320,7 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 
 		String timeCode = objectMapper.readTree(timePurchase.getResponse().getContentAsString()).get("code").asText();
 
-		mockMvc.perform(post("/api/kasownik/validate").header("Authorization", bearer(token))
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"code\":\"" + timeCode + "\",\"vehicleId\":1}"))
-				.andExpect(status().isOk());
+			validateOwnedTicket(token, timeCode, firstVehicleId());
 
 		mockMvc.perform(post("/api/tickets").header("Authorization", bearer(token))
 				.contentType(MediaType.APPLICATION_JSON)
@@ -389,6 +356,22 @@ class TicketIntegrationTest extends AbstractIntegrationTest {
 		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
 
 		mockMvc.perform(get("/api/tickets?type=NIEZNANY").header("Authorization", bearer(token)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void rejectsRemovedValidatedFilter() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+
+		mockMvc.perform(get("/api/tickets?validated=false").header("Authorization", bearer(token)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void rejectsRemovedActiveFilter() throws Exception {
+		String token = registerPassengerAndLogin("jan@example.com", "tajne123");
+
+		mockMvc.perform(get("/api/tickets?active=true").header("Authorization", bearer(token)))
 				.andExpect(status().isBadRequest());
 	}
 

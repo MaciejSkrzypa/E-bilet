@@ -111,6 +111,18 @@ describe('KasownikPageComponent', () => {
       }),
     );
 
+    const list = vi.fn(() =>
+      of({
+        content: [ownedTicket],
+        page: 0,
+        size: 100,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
+      }),
+    );
+
     await TestBed.configureTestingModule({
       imports: [KasownikPageComponent],
       providers: [
@@ -123,17 +135,7 @@ describe('KasownikPageComponent', () => {
         {
           provide: TicketsApiService,
           useValue: {
-            list: vi.fn(() =>
-              of({
-                content: [ownedTicket],
-                page: 0,
-                size: 100,
-                totalElements: 1,
-                totalPages: 1,
-                first: true,
-                last: true,
-              }),
-            ),
+            list,
           },
         },
         {
@@ -163,6 +165,13 @@ describe('KasownikPageComponent', () => {
     fixture.detectChanges();
 
     const component = fixture.componentInstance as any;
+    expect(list).toHaveBeenCalledWith({
+      page: 0,
+      size: 100,
+      sort: 'purchaseDate,desc',
+      type: ['SINGLE', 'TIME'],
+      status: ['REQUIRES_VALIDATION'],
+    });
     expect(component.validationMode()).toBe('ticket');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Wybierz mój bilet');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('UUID biletu');

@@ -16,9 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-import jakarta.validation.constraints.AssertTrue;
 
 import com.example.cityticket.util.AppTime;
 
@@ -90,15 +89,17 @@ public class Ticket {
 	}
 
 	@PrePersist
-	void setPurchaseDateIfMissing() {
+	@PreUpdate
+	void prepareForPersistence() {
 		if (purchaseDate == null) {
 			purchaseDate = AppTime.nowDateTime();
 		}
+		if (!hasConsistentTypeFields()) {
+			throw new IllegalStateException("Ticket time fields must match its type");
+		}
 	}
 
-	@AssertTrue(message = "Ticket time fields must match its type")
-	@Transient
-	public boolean isTypeFieldsConsistent() {
+	private boolean hasConsistentTypeFields() {
 		if (type == null) {
 			return true;
 		}

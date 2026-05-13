@@ -1,6 +1,7 @@
 package com.example.cityticket.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -45,9 +46,20 @@ public class TicketController {
 			Authentication auth,
 			@RequestParam(required = false) List<TicketType> type,
 			@RequestParam(required = false) List<TicketFilterStatus> status,
-			@RequestParam(required = false) Boolean validated,
-			@RequestParam(required = false) Boolean active,
+			@RequestParam Map<String, String> requestParams,
 			@PageableDefault(size = 20, sort = "purchaseDate", direction = Sort.Direction.DESC) Pageable pageable) {
-		return PageResponse.from(ticketService.findMyTickets(auth.getName(), type, status, validated, active, pageable));
+		rejectRemovedFilters(requestParams);
+		return PageResponse.from(ticketService.findMyTickets(auth.getName(), type, status, pageable));
+	}
+
+	private void rejectRemovedFilters(Map<String, String> requestParams) {
+		if (requestParams.containsKey("validated")) {
+			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Query parameter 'validated' has been removed. Use status=VALIDATED or status=REQUIRES_VALIDATION.");
+		}
+		if (requestParams.containsKey("active")) {
+			throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Query parameter 'active' has been removed. Use status=ACTIVE.");
+		}
 	}
 }

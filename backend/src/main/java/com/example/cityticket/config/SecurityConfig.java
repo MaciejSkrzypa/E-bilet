@@ -19,15 +19,14 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final KasownikIntegrationAuthenticationFilter kasownikIntegrationAuthenticationFilter;
 	private final RestAuthenticationEntryPoint authenticationEntryPoint;
 	private final RestAccessDeniedHandler accessDeniedHandler;
 
 	private static final String[] PUBLIC_PATHS = {
-			"/health",
 			"/api/auth/**",
 			"/api/offers", "/api/offers/**",
 			"/api/vehicles", "/api/vehicles/**",
-			"/api/kasownik/**",
 			"/docs", "/docs/**",
 			"/swagger-ui", "/swagger-ui/**",
 			"/v3/api-docs", "/v3/api-docs/**"
@@ -39,15 +38,18 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(cors -> {})
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.exceptionHandling(eh -> eh
-						.authenticationEntryPoint(authenticationEntryPoint)
-						.accessDeniedHandler(accessDeniedHandler))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(PUBLIC_PATHS).permitAll()
-						.requestMatchers("/api/inspection/**").hasRole("INSPECTOR")
-						.anyRequest().authenticated())
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-		return http.build();
+					.exceptionHandling(eh -> eh
+							.authenticationEntryPoint(authenticationEntryPoint)
+							.accessDeniedHandler(accessDeniedHandler))
+					.authorizeHttpRequests(auth -> auth
+							.requestMatchers(PUBLIC_PATHS).permitAll()
+							.requestMatchers("/api/integrations/kasownik/**").hasRole("KASOWNIK_INTEGRATION")
+							.requestMatchers("/api/inspection/**").hasRole("INSPECTOR")
+							.requestMatchers("/api/kasownik/**").hasRole("PASSENGER")
+							.anyRequest().authenticated())
+					.addFilterBefore(kasownikIntegrationAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+					.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+			return http.build();
 	}
 
 	@Bean

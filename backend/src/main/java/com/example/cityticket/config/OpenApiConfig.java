@@ -12,7 +12,9 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 @Configuration
 public class OpenApiConfig {
 
-	private static final String SECURITY_SCHEME = "bearerAuth";
+	public static final String BEARER_AUTH_SCHEME = "bearerAuth";
+	public static final String KASOWNIK_INTEGRATION_API_KEY_SCHEME = "kasownikApiKey";
+	private static final String KASOWNIK_INTEGRATION_API_KEY_HEADER = "X-Kasownik-Key";
 
 	@Bean
 	public OpenAPI cityTicketOpenAPI() {
@@ -21,11 +23,15 @@ public class OpenApiConfig {
 						.title("E-bilet API")
 						.description("Backend systemu elektronicznych biletów miejskich.")
 						.version("0.0.1"))
-				.addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME))
+				.addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME))
 				.components(new Components()
-						.addSecuritySchemes(SECURITY_SCHEME, new SecurityScheme()
+						.addSecuritySchemes(BEARER_AUTH_SCHEME, new SecurityScheme()
 								.type(SecurityScheme.Type.HTTP)
 								.scheme("bearer")
-								.bearerFormat("JWT")));
+								.bearerFormat("JWT"))
+						.addSecuritySchemes(KASOWNIK_INTEGRATION_API_KEY_SCHEME, new SecurityScheme()
+								.type(SecurityScheme.Type.APIKEY)
+								.in(SecurityScheme.In.HEADER)
+								.name(KASOWNIK_INTEGRATION_API_KEY_HEADER)));
 	}
 }

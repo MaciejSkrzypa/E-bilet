@@ -56,6 +56,7 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Logowanie');
     expect(compiled.textContent).toContain('Rejestracja');
+    expect(compiled.textContent).not.toContain('Kasownik');
   });
 
   it('should render balance and top-up button for logged passenger', () => {
